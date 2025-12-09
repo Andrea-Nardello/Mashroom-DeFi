@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mashroom - DeFi Protocol Universe</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <style>
+        /* ═══════════════════════════════════════════════════════════════════
+           CSS VARIABLES - LIGHT MODE (Theory Ventures Style)
+           ═══════════════════════════════════════════════════════════════════ */
+        :root {
+            --color-bg: #FAFAFA;
+            --color-surface: #FFFFFF;
+            --color-text-primary: #0A0A0A;
+            --color-text-secondary: #666666;
+            --color-text-tertiary: #999999;
+            --color-border: #E5E5E5;
+            --color-accent: #0A0A0A;
+            --color-accent-glow: rgba(10, 10, 10, 0.1);
+            --color-node: #0A0A0A;
+            --color-node-highlight: #333333;
+            --color-line: rgba(10, 10, 10, 0.08);
+            
+            --font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           RESET & BASE
+           ═══════════════════════════════════════════════════════════════════ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: var(--font-family);
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           CANVAS CONTAINER
+           ═══════════════════════════════════════════════════════════════════ */
+        #universe-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        #universe-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           HEADER CON LOGO DINAMICO
+           ═══════════════════════════════════════════════════════════════════ */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* GRADIENT TRASPARENTE - stato iniziale */
+            background: linear-gradient(to bottom,
+                rgba(250, 250, 250, 0.95) 0%,
+                rgba(250, 250, 250, 0.6) 60%,
+                transparent 100%
+            );
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: padding 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+                        background 0.4s ease,
+                        backdrop-filter 0.4s ease,
+                        box-shadow 0.4s ease;
+            /* Permette click attraverso la navbar */
+            pointer-events: none;
+        }
+
+        /* Riabilita click su elementi interattivi */
+        .header .logo,
+        .header .nav,
+        .header .nav-link,
+        .header .cta-button,
+        .header .mobile-menu-btn {
+            pointer-events: auto;
+        }
+
+        .header.scrolled {
+            padding: 0.75rem 3rem;
+            /* MANTIENE GRADIENT TRASPARENTE per pagine Three.js */
+            background: linear-gradient(to bottom,
+                rgba(250, 250, 250, 0.85) 0%,
+                rgba(250, 250, 250, 0.4) 60%,
+                transparent 100%
+            );
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            box-shadow: none;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo-image {
+            height: 130px;
+            width: auto;
+            transition: height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            will-change: height;
+        }
+
+        .header.scrolled .logo-image {
+            height: 36px;
+        }
+
+        .logo:hover .logo-image {
+            opacity: 0.8;
+        }
+
+        .logo-text {
+            font-family: "Playfair Display", Georgia, serif;
+            font-size: 1.125rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            margin-left: 0.75rem;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .header.scrolled .logo-text {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Responsive Logo */
+        @media (max-width: 1024px) {
+            .logo-image { height: 100px; }
+            .header.scrolled .logo-image { height: 32px; }
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 1rem 1.5rem; }
+            .header.scrolled { padding: 0.75rem 1.5rem; }
+            .logo-image { height: 80px; }
+            .header.scrolled .logo-image { height: 28px; }
+        }
+
+        /* Accessibility: Rispetta preferenza reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .logo-image, .logo-text, .header {
+                transition: none !important;
+            }
+        }
+        
+        .nav {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            text-decoration: none;
+            position: relative;
+            padding-bottom: 0.5rem;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--color-text-secondary);
+        }
+
+        /* Active nav link with orange dot */
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: #E85D04;
+            border-radius: 50%;
+        }
+        
+        .cta-button {
+            font-size: 0.875rem;
+            padding: 0.5rem 1.25rem;
+            border: 1px solid var(--color-text-primary);
+            border-radius: 100px;
+            color: var(--color-text-primary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            background: transparent;
+        }
+        
+        .cta-button:hover {
+            background-color: var(--color-text-primary);
+            color: var(--color-bg);
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           TITLE OVERLAY - Animated from center to top-left under logo
+           Animation triggers only on zoom in
+           ═══════════════════════════════════════════════════════════════════ */
+        .title-overlay {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 90;
+            text-align: center;
+            pointer-events: none;
+            opacity: 1;
+            transition: all 2.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .title-overlay.positioned {
+            top: 3rem;
+            left: 2rem;
+            transform: translate(0, 0);
+            text-align: left;
+        }
+        
+        .title-overlay h1 {
+            font-size: clamp(2rem, 8vw, 5rem);
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            white-space: nowrap;
+            color: #0A0A0A;
+            opacity: 1;
+            transform: scale(1);
+            transition: all 2.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .title-overlay.positioned h1 {
+            font-size: 0;
+            opacity: 0;
+            transform: scale(0);
+            height: 0;
+            margin: 0;
+        }
+        
+        .title-overlay p {
+            font-size: 1rem;
+            color: #0A0A0A;
+            margin-top: 1.75rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 1;
+            transition: all 2.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        
+        .title-overlay.positioned p {
+            font-size: 0.6875rem;
+            font-weight: 400;
+            margin-top: 0;
+            letter-spacing: 0.03em;
+            color: #0A0A0A;
+            text-transform: none;
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           PORTFOLIO PANEL - Bottom Right, Expandable
+           ═══════════════════════════════════════════════════════════════════ */
+        .portfolio-panel {
+            position: fixed;
+            right: 2rem;
+            bottom: 2rem;
+            z-index: 100;
+            width: 320px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .portfolio-panel.collapsed .panel-content {
+            display: none;
+        }
+        
+        .portfolio-panel .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--color-border);
+            flex-shrink: 0;
+        }
+        
+        .portfolio-panel.collapsed .panel-header {
+            border-bottom: none;
+        }
+        
+        .portfolio-panel .panel-title {
+            font-size: 0.9375rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            letter-spacing: 0.02em;
+            flex: 1;
+            font-family: "SF Mono", "Monaco", "Inconsolata", "Roboto Mono", monospace;
+        }
+        
+        .portfolio-panel .panel-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .portfolio-panel .panel-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text-secondary);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .portfolio-panel .panel-btn:hover {
+            border-color: var(--color-text-primary);
+            color: var(--color-text-primary);
+        }
+        
+        .portfolio-panel .panel-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 1.25rem;
+            max-height: 400px;
+        }
+        
+        /* Search inputs */
+        .portfolio-panel .search-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .portfolio-panel .search-input {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text-primary);
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        .portfolio-panel .search-input:focus {
+            outline: none;
+            border-color: var(--color-text-primary);
+        }
+        
+        .portfolio-panel .search-input::placeholder {
+            color: var(--color-text-tertiary);
+        }
+        
+        /* Zoom controls */
+        .portfolio-panel .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+        
+        .portfolio-panel .zoom-label {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+            letter-spacing: 0.02em;
+        }
+        
+        .portfolio-panel .zoom-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text-primary);
+            font-family: var(--font-family);
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .portfolio-panel .zoom-btn:hover {
+            border-color: var(--color-text-primary);
+            background: var(--color-text-primary);
+            color: var(--color-surface);
+        }
+        
+        /* Portfolio list */
+        .portfolio-panel .portfolio-title {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+        
+        .portfolio-panel .category-title {
+            font-size: 0.6875rem;
+            color: var(--color-text-tertiary);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin: 1rem 0 0.5rem 0;
+        }
+        
+        .portfolio-panel .category-title:first-of-type {
+            margin-top: 0;
+        }
+        
+        .portfolio-panel .company-list {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .portfolio-panel .company-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.625rem 0;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+        
+        .portfolio-panel .company-item:hover {
+            opacity: 0.7;
+        }
+        
+        .portfolio-panel .company-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .portfolio-panel .company-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .portfolio-panel .company-dot.data { background: #E85D3F; }
+        .portfolio-panel .company-dot.ai { background: #5BA3E8; }
+        .portfolio-panel .company-dot.web3 { background: #8B5CF6; }
+        .portfolio-panel .company-dot.security { background: #10B981; }
+        .portfolio-panel .company-dot.infra { background: #F59E0B; }
+        
+        .portfolio-panel .company-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+        }
+        
+        .portfolio-panel .company-link {
+            color: var(--color-text-tertiary);
+            font-size: 0.875rem;
+            transition: color 0.2s ease;
+        }
+        
+        .portfolio-panel .company-item:hover .company-link {
+            color: var(--color-text-primary);
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           DETAIL VIEW - Single Company Display
+           ═══════════════════════════════════════════════════════════════════ */
+        .detail-category {
+            font-size: 0.6875rem;
+            color: var(--color-text-tertiary);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        
+        .detail-company-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--color-border);
+            margin-bottom: 1rem;
+        }
+        
+        .detail-company-row .company-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .detail-company-name {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            flex: 1;
+        }
+        
+        .detail-link-icon {
+            color: var(--color-text-tertiary);
+            font-size: 1rem;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .detail-link-icon:hover {
+            color: var(--color-text-primary);
+        }
+        
+        .detail-description {
+            font-size: 0.9375rem;
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-meta .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .detail-meta .meta-label {
+            font-size: 0.625rem;
+            color: var(--color-text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        
+        .detail-meta .meta-value {
+            font-size: 1rem;
+            color: var(--color-text-primary);
+            font-weight: 400;
+        }
+        
+        .detail-visit-btn {
+            display: inline-block;
+            padding: 0.625rem 1.25rem;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text-primary);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .detail-visit-btn:hover {
+            background: var(--color-text-primary);
+            color: var(--color-surface);
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           JOIN MODAL - Light Mode
+           ═══════════════════════════════════════════════════════════════════ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 10, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            padding: 2rem;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.visible .modal {
+            transform: translateY(0);
+        }
+        
+        .modal .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--color-text-tertiary);
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+        
+        .modal .close-btn:hover {
+            color: var(--color-text-primary);
+        }
+        
+        .modal h2 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .modal p {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .modal label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.375rem;
+        }
+        
+        .modal input,
+        .modal textarea {
+            width: 100%;
+            padding: 0.625rem 0.875rem;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            color: var(--color-text-primary);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        .modal input:focus,
+        .modal textarea:focus {
+            outline: none;
+            border-color: var(--color-text-primary);
+        }
+        
+        .modal textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .modal .submit-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--color-text-primary);
+            border: none;
+            border-radius: 4px;
+            color: var(--color-surface);
+            font-family: var(--font-family);
+            font-size: 0.875rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+        
+        .modal .submit-btn:hover {
+            opacity: 0.85;
+        }
+        
+        .modal .required {
+            font-size: 0.6875rem;
+            color: var(--color-text-tertiary);
+            margin-top: 1rem;
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           CONTROLS HINT - Light Mode
+           ═══════════════════════════════════════════════════════════════════ */
+        .controls-hint {
+            position: fixed;
+            top: 50%;
+            left: 2rem;
+            transform: translateY(-50%);
+            z-index: 100;
+            font-size: 0.6875rem;
+            color: var(--color-text-tertiary);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .controls-hint span {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .controls-hint kbd {
+            padding: 0.125rem 0.375rem;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 3px;
+            font-family: var(--font-family);
+            font-size: 0.625rem;
+            color: var(--color-text-secondary);
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           NODE LABELS - Light Mode
+           ═══════════════════════════════════════════════════════════════════ */
+        .node-label {
+            position: absolute;
+            padding: 0.25rem 0.5rem;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 3px;
+            font-size: 0.75rem;
+            color: var(--color-text-primary);
+            white-space: nowrap;
+            pointer-events: none;
+            transform: translate(-50%, -100%);
+            margin-top: -10px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .node-label.visible {
+            opacity: 1;
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           COMPANY TOOLTIP - Dark card above hovered node
+           ═══════════════════════════════════════════════════════════════════ */
+        .company-tooltip {
+            position: absolute;
+            z-index: 150;
+            min-width: 200px;
+            max-width: 280px;
+            padding: 1.25rem;
+            background: #1a1a1a;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+            transform: translate(-50%, -100%);
+            margin-top: -20px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .company-tooltip.visible {
+            opacity: 1;
+        }
+        
+        .company-tooltip .tooltip-name {
+            font-size: 1.125rem;
+            font-weight: 500;
+            color: #ffffff;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .company-tooltip .tooltip-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.5rem 0;
+        }
+        
+        .company-tooltip .tooltip-row:not(:last-child) {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .company-tooltip .tooltip-label {
+            font-size: 0.8125rem;
+            color: rgba(255, 255, 255, 0.5);
+            min-width: 60px;
+        }
+        
+        .company-tooltip .tooltip-value {
+            font-size: 0.875rem;
+            color: #ffffff;
+            flex: 1;
+        }
+        
+        .company-tooltip .tooltip-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #ffffff;
+            text-decoration: none;
+        }
+        
+        .company-tooltip .tooltip-arrow {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           LOADING - Light Mode
+           ═══════════════════════════════════════════════════════════════════ */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--color-bg);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--color-border);
+            border-top-color: var(--color-text-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loading p {
+            margin-top: 1rem;
+            font-size: 0.8125rem;
+            color: var(--color-text-tertiary);
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ═══════════════════════════════════════════════════════════════════
+           MOBILE MENU BUTTON & OVERLAY
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .mobile-menu-btn {
+            display: none;
+            width: 44px;
+            height: 44px;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--color-text-primary);
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-menu-btn:hover,
+        .mobile-menu-btn:active {
+            border-color: var(--color-text-primary);
+            background: var(--color-text-primary);
+            color: var(--color-bg);
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(250, 250, 250, 0.98);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            width: 44px;
+            height: 44px;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-menu-close:hover,
+        .mobile-menu-close:active {
+            border-color: var(--color-text-primary);
+            background: var(--color-text-primary);
+            color: var(--color-bg);
+        }
+
+        .mobile-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .mobile-nav-link {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            text-decoration: none;
+            padding: 0.75rem 2rem;
+            transition: color 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-nav-link:hover,
+        .mobile-nav-link:active {
+            color: #E85D04;
+        }
+
+        .mobile-nav-link.active {
+            color: #E85D04;
+        }
+
+        .mobile-cta {
+            margin-top: 2rem;
+            font-size: 1rem;
+            font-weight: 400;
+            padding: 1rem 2rem;
+            background-color: var(--color-text-primary);
+            color: var(--color-bg);
+            border-radius: 4px;
+            text-decoration: none;
+            min-width: 200px;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════════════════════ */
+        @media (max-width: 768px) {
+            .nav {
+                display: none;
+            }
+
+            .cta-button {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .portfolio-panel {
+                /* Keep panel thinner on mobile - don't cover 3D nodes */
+                left: auto;
+                right: 1rem;
+                width: 280px;
+                bottom: 1rem;
+                max-height: 35vh;  /* Reduced height to not cover nodes */
+            }
+
+            .panel-btn {
+                width: 44px;
+                height: 44px;
+            }
+
+            .controls-hint {
+                display: none;
+            }
+
+            .title-overlay h1 {
+                font-size: clamp(1.75rem, 6vw, 3rem);
+            }
+
+            .title-overlay p {
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Small phones */
+        @media (max-width: 480px) {
+            .header {
+                padding: 1rem;
+            }
+
+            .portfolio-panel {
+                /* Even smaller on very small phones */
+                left: auto;
+                right: 0.5rem;
+                width: 240px;
+                bottom: 0.5rem;
+                max-height: 30vh;
+            }
+
+            .title-overlay h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        <p>Loading Protocol Universe...</p>
+    </div>
+    
+    <!-- Universe Canvas -->
+    <div id="universe-container">
+        <canvas id="universe-canvas"></canvas>
+    </div>
+    
+    <!-- Title Overlay - Animates from center to top-left -->
+    <div class="title-overlay" id="title-overlay">
+        <h1>Mashroom</h1>
+        <p>Where DeFi Connects — Effortlessly</p>
+    </div>
+    
+    <!-- Header - Same style as About page -->
+    <header class="header">
+        <a href="universe.html" class="logo">
+            <img src="assets/logo.png" alt="Mashroom Logo" class="logo-image" loading="eager">
+            <span class="logo-text">Mashroom</span>
+        </a>
+        <nav class="nav">
+            <a href="universe.html" class="nav-link active">Universe</a>
+            <a href="about.html" class="nav-link">About</a>
+            <a href="docs.html" class="nav-link">Learning</a>
+            <a href="protocols.html" class="nav-link">Prices</a>
+        </nav>
+        <a href="https://forms.gle/yQSqha5P9ivX3Kt78" target="_blank" class="cta-button" style="background-color: #0A0A0A; color: #FAFAFA; border-radius: 4px; border: none;">Connect with us</a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">☰</button>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">×</button>
+        <nav class="mobile-nav">
+            <a href="universe.html" class="mobile-nav-link active">Universe</a>
+            <a href="about.html" class="mobile-nav-link">About</a>
+            <a href="docs.html" class="mobile-nav-link">Learning</a>
+            <a href="protocols.html" class="mobile-nav-link">Prices</a>
+            <a href="https://forms.gle/yQSqha5P9ivX3Kt78" target="_blank" class="mobile-cta">Connect with us</a>
+        </nav>
+    </div>
+    
+    <!-- Protocol Panel - Bottom Right, Expandable -->
+    <div class="portfolio-panel" id="portfolio-panel">
+        <div class="panel-header">
+            <span class="panel-title" id="panel-title">Explore Protocols</span>
+            <div class="panel-actions">
+                <button class="panel-btn" id="back-btn" onclick="showListView()" style="display: none;">←</button>
+                <button class="panel-btn" onclick="openJoinModal()">→</button>
+                <button class="panel-btn" id="toggle-panel" onclick="togglePanel()">+</button>
+            </div>
+        </div>
+        
+        <!-- List View -->
+        <div class="panel-content" id="list-view" style="display: none;">
+            <div class="search-group">
+                <input type="text" class="search-input" id="search-company" placeholder="Search company...">
+            </div>
+            
+            <div class="zoom-controls">
+                <span class="zoom-label">Zoom to:</span>
+                <button class="zoom-btn" onclick="zoomToOverview()">Overview</button>
+                <button class="zoom-btn" onclick="zoomToRandom()">Random</button>
+            </div>
+            
+            <div class="portfolio-title">SOLANA PROTOCOLS</div>
+            
+            <div id="company-list">
+                <!-- Companies will be injected here by JS -->
+            </div>
+        </div>
+        
+        <!-- Detail View (shown when company selected) -->
+        <div class="panel-content" id="detail-view" style="display: none;">
+            <div class="detail-category" id="detail-category">INFRASTRUCTURE</div>
+            
+            <div class="detail-company-row">
+                <span class="company-dot" id="detail-dot"></span>
+                <span class="detail-company-name" id="detail-name">CloudScale</span>
+                <a href="#" target="_blank" class="detail-link-icon" id="detail-link-icon">↗</a>
+            </div>
+            
+            <p class="detail-description" id="detail-description">
+                Automated cloud infrastructure scaling and optimization.
+            </p>
+            
+            <div class="detail-meta">
+                <div class="meta-item">
+                    <span class="meta-label">RISK</span>
+                    <span class="meta-value" id="detail-stage">Medium Risk</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">TVL</span>
+                    <span class="meta-value" id="detail-year">$1.2B</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">APY</span>
+                    <span class="meta-value" id="detail-location">8-20%</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">TYPE</span>
+                    <span class="meta-value" id="detail-employees">Automated</span>
+                </div>
+            </div>
+
+            <a href="#" target="_blank" class="detail-visit-btn" id="detail-link">Visit Protocol →</a>
+        </div>
+    </div>
+    
+    <!-- Controls Hint -->
+    <div class="controls-hint">
+        <span><kbd>Drag</kbd> Rotate</span>
+        <span><kbd>Scroll</kbd> Zoom</span>
+        <span><kbd>Click</kbd> Select</span>
+    </div>
+    
+    <!-- Connect Wallet Modal -->
+    <div class="modal-overlay" id="join-modal">
+        <div class="modal">
+            <button class="close-btn" onclick="closeJoinModal()">×</button>
+            <h2>Connect Your Wallet</h2>
+            <p>Connect your Solana wallet to start building DeFi strategies</p>
+
+            <form id="join-form">
+                <div class="form-group">
+                    <button type="button" class="submit-btn" style="margin-bottom: 0.75rem; background: #9945FF;">
+                        🟣 Phantom
+                    </button>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="submit-btn" style="margin-bottom: 0.75rem; background: #FC822B;">
+                        🟠 Solflare
+                    </button>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="submit-btn" style="background: #000;">
+                        ⬛ Ledger
+                    </button>
+                </div>
+                <p class="required" style="text-align: center; margin-top: 1.5rem;">Non-custodial • Your keys, your crypto</p>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Node Label (for hover) -->
+    <div class="node-label" id="node-label"></div>
+    
+    <!-- Protocol Tooltip (dark card on hover) -->
+    <div class="company-tooltip" id="company-tooltip">
+        <div class="tooltip-name" id="tooltip-name">Jupiter</div>
+        <div class="tooltip-row">
+            <span class="tooltip-label">Category</span>
+            <span class="tooltip-value" id="tooltip-thesis">DEX</span>
+        </div>
+        <div class="tooltip-row">
+            <span class="tooltip-label">Protocol</span>
+            <span class="tooltip-value">
+                <span id="tooltip-website">jup.ag</span>
+                <span class="tooltip-arrow">→</span>
+            </span>
+        </div>
+    </div>
+    
+    <script>
+        // ═══════════════════════════════════════════════════════════════════
+        // SOLANA DEFI PROTOCOLS DATA
+        // ═══════════════════════════════════════════════════════════════════
+        const companies = [
+            // DEX / SWAP PROTOCOLS
+            { id: 1, name: "Jupiter", category: "DEX", stage: "Low Risk", year: "$2.1B TVL", location: "Variable", employees: "Aggregator", url: "https://jup.ag", description: "Leading DEX aggregator on Solana with best price routing across all liquidity sources." },
+            { id: 2, name: "Raydium", category: "DEX", stage: "Medium Risk", year: "$890M TVL", location: "12-45%", employees: "AMM", url: "https://raydium.io", description: "Hybrid AMM built on Solana with concentrated liquidity and order book integration." },
+            { id: 3, name: "Orca", category: "DEX", stage: "Low Risk", year: "$420M TVL", location: "8-25%", employees: "CLAMM", url: "https://orca.so", description: "User-friendly DEX with Whirlpool concentrated liquidity pools." },
+            { id: 4, name: "OpenBook", category: "DEX", stage: "Low Risk", year: "$85M TVL", location: "Variable", employees: "Order Book", url: "https://openserum.io", description: "Community-led fork of Serum, decentralized order book on Solana." },
+
+            // LENDING PROTOCOLS
+            { id: 5, name: "MarginFi", category: "Lending", stage: "Medium Risk", year: "$1.8B TVL", location: "5-15%", employees: "Cross-Margin", url: "https://marginfi.com", description: "Decentralized lending protocol with cross-margin capabilities on Solana." },
+            { id: 6, name: "Kamino", category: "Lending", stage: "Medium Risk", year: "$1.2B TVL", location: "8-20%", employees: "Automated", url: "https://kamino.finance", description: "Automated liquidity strategies and lending markets on Solana." },
+            { id: 7, name: "Solend", category: "Lending", stage: "Low Risk", year: "$650M TVL", location: "4-12%", employees: "Money Market", url: "https://solend.fi", description: "Algorithmic money market protocol for lending and borrowing on Solana." },
+            { id: 8, name: "Mango", category: "Lending", stage: "Medium Risk", year: "$45M TVL", location: "6-18%", employees: "Trading", url: "https://mango.markets", description: "Decentralized trading platform with spot margin and perpetuals." },
+            { id: 9, name: "Hubble", category: "Lending", stage: "Medium Risk", year: "$32M TVL", location: "Variable", employees: "CDP", url: "https://hubbleprotocol.io", description: "Borrow USDH stablecoin against multiple collateral types." },
+
+            // LIQUID STAKING
+            { id: 10, name: "Marinade", category: "Staking", stage: "Low Risk", year: "$1.5B TVL", location: "7.5%", employees: "mSOL", url: "https://marinade.finance", description: "Leading liquid staking solution with mSOL token and stake automation." },
+            { id: 11, name: "Jito", category: "Staking", stage: "Low Risk", year: "$2.8B TVL", location: "8.2%", employees: "JitoSOL", url: "https://jito.network", description: "MEV-aware liquid staking with JitoSOL and validator optimization." },
+            { id: 12, name: "BlazeStake", category: "Staking", stage: "Low Risk", year: "$180M TVL", location: "7.8%", employees: "bSOL", url: "https://stake.solblaze.org", description: "Decentralized stake pool with bSOL liquid staking token." },
+            { id: 13, name: "Sanctum", category: "Staking", stage: "Low Risk", year: "$950M TVL", location: "7.6%", employees: "LST Hub", url: "https://sanctum.so", description: "Unified liquidity layer for all Solana liquid staking tokens." },
+            { id: 14, name: "Lido", category: "Staking", stage: "Low Risk", year: "$120M TVL", location: "6.8%", employees: "stSOL", url: "https://solana.lido.fi", description: "Liquid staking solution by Lido DAO on Solana." },
+
+            // LIQUIDITY PROTOCOLS
+            { id: 15, name: "Meteora", category: "Liquidity", stage: "High Risk", year: "$520M TVL", location: "15-80%", employees: "DLMM", url: "https://meteora.ag", description: "Dynamic liquidity protocols with DLMM and dynamic vaults." },
+            { id: 16, name: "Lifinity", category: "Liquidity", stage: "Medium Risk", year: "$95M TVL", location: "10-35%", employees: "PAMM", url: "https://lifinity.io", description: "Proactive market maker with oracle-based pricing mechanism." },
+            { id: 17, name: "Invariant", category: "Liquidity", stage: "Medium Risk", year: "$18M TVL", location: "12-50%", employees: "CLAMM", url: "https://invariant.app", description: "Concentrated liquidity AMM with single-sided deposits." },
+
+            // YIELD AGGREGATORS
+            { id: 18, name: "Tulip", category: "Yield", stage: "Medium Risk", year: "$45M TVL", location: "8-40%", employees: "Aggregator", url: "https://tulip.garden", description: "Yield aggregation protocol optimizing returns across Solana DeFi." },
+            { id: 19, name: "Francium", category: "Yield", stage: "High Risk", year: "$28M TVL", location: "12-60%", employees: "Leveraged", url: "https://francium.io", description: "Leveraged yield farming with automated position management." },
+            { id: 20, name: "Hawksight", category: "Yield", stage: "Medium Risk", year: "$15M TVL", location: "10-45%", employees: "Auto-Compound", url: "https://hawksight.co", description: "Automated yield optimizer with auto-compounding strategies." },
+            { id: 21, name: "Saber", category: "Yield", stage: "Low Risk", year: "$22M TVL", location: "5-15%", employees: "StableSwap", url: "https://saber.so", description: "Cross-chain stablecoin exchange with low slippage." },
+
+            // DERIVATIVES
+            { id: 22, name: "Drift", category: "Derivatives", stage: "High Risk", year: "$380M TVL", location: "Variable", employees: "Perpetuals", url: "https://drift.trade", description: "Decentralized perpetuals exchange with cross-margined trading." },
+            { id: 23, name: "Phoenix", category: "Derivatives", stage: "Medium Risk", year: "$120M TVL", location: "Variable", employees: "Order Book", url: "https://phoenix.trade", description: "On-chain limit order book DEX for spot trading on Solana." },
+            { id: 24, name: "Zeta", category: "Derivatives", stage: "High Risk", year: "$65M TVL", location: "Variable", employees: "Options", url: "https://zeta.markets", description: "Under-collateralized derivatives with perpetuals and options." },
+            { id: 25, name: "Cypher", category: "Derivatives", stage: "High Risk", year: "$12M TVL", location: "Variable", employees: "Margin", url: "https://cypher.trade", description: "Cross-margined derivatives trading with portfolio margin." },
+        ];
+        
+        // Category colors - Dark tones for light background (original)
+        const categoryColors = {
+            "DEX": 0x333333,
+            "Lending": 0x555555,
+            "Staking": 0x222222,
+            "Liquidity": 0x444444,
+            "Yield": 0x666666,
+            "Derivatives": 0x333333,
+        };
+        
+        // ═══════════════════════════════════════════════════════════════════
+        // THREE.JS SETUP - Light Mode
+        // ═══════════════════════════════════════════════════════════════════
+        let scene, camera, renderer, controls;
+        let nodes = [];
+        let connections = [];
+        let raycaster, mouse;
+        let hoveredNode = null;
+        let selectedNode = null;
+        
+        const canvas = document.getElementById('universe-canvas');
+        const container = document.getElementById('universe-container');
+        const nodeLabel = document.getElementById('node-label');
+        
+        function init() {
+            // Scene - Light Mode
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xfafafa);
+            scene.fog = new THREE.FogExp2(0xfafafa, 0.012);
+            
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                60,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(0, 0, 50);
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                antialias: true,
+                alpha: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            // Raycaster for mouse interaction
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+            
+            // Create nodes
+            createNodes();
+            
+            // Create connections
+            createConnections();
+            
+            // Create background particles
+            createBackgroundParticles();
+            
+            // Add ambient light - Light mode
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+            
+            // Add directional light for better definition
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            directionalLight.position.set(10, 10, 10);
+            scene.add(directionalLight);
+            
+            // Event listeners
+            window.addEventListener('resize', onWindowResize);
+            canvas.addEventListener('mousemove', onMouseMove);
+            canvas.addEventListener('click', onMouseClick);
+
+            // Touch event support for mobile
+            canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+            canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+            canvas.addEventListener('touchend', onTouchEnd, { passive: false });
+
+            // Hide loading
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hidden');
+            }, 1000);
+            
+            // Start animation
+            animate();
+        }
+        
+        function createNodes() {
+            const geometry = new THREE.SphereGeometry(0.8, 32, 32);
+            
+            companies.forEach((company, index) => {
+                // Position in 3D space (spherical distribution)
+                const phi = Math.acos(-1 + (2 * index) / companies.length);
+                const theta = Math.sqrt(companies.length * Math.PI) * phi;
+                const radius = 20 + Math.random() * 10;
+                
+                const x = radius * Math.cos(theta) * Math.sin(phi);
+                const y = radius * Math.sin(theta) * Math.sin(phi);
+                const z = radius * Math.cos(phi);
+                
+                // Material with category color
+                const color = categoryColors[company.category] || 0xffffff;
+                const material = new THREE.MeshPhongMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.3,
+                    shininess: 100
+                });
+                
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(x, y, z);
+                mesh.userData = company;
+                
+                // Glow effect
+                const glowGeometry = new THREE.SphereGeometry(1.2, 32, 32);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: 0.15
+                });
+                const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                mesh.add(glow);
+                
+                nodes.push(mesh);
+                scene.add(mesh);
+            });
+        }
+        
+        function createConnections() {
+            const material = new THREE.LineBasicMaterial({
+                color: 0x0a0a0a,
+                transparent: true,
+                opacity: 0.25
+            });
+            
+            // Connect nodes - increased distance for more visible network
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const distance = nodes[i].position.distanceTo(nodes[j].position);
+                    const sameCategory = nodes[i].userData.category === nodes[j].userData.category;
+                    
+                    if (distance < 35 || (sameCategory && distance < 50)) {
+                        const geometry = new THREE.BufferGeometry().setFromPoints([
+                            nodes[i].position,
+                            nodes[j].position
+                        ]);
+                        const line = new THREE.Line(geometry, material.clone());
+                        connections.push(line);
+                        scene.add(line);
+                    }
+                }
+            }
+        }
+        
+        function createBackgroundParticles() {
+            const particleCount = 500;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 200;
+                positions[i + 1] = (Math.random() - 0.5) * 200;
+                positions[i + 2] = (Math.random() - 0.5) * 200;
+            }
+            
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            
+            const material = new THREE.PointsMaterial({
+                color: 0x0a0a0a,
+                size: 0.2,
+                transparent: true,
+                opacity: 0.15
+            });
+            
+            const particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+        }
+        
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(nodes);
+            
+            const tooltip = document.getElementById('company-tooltip');
+            
+            if (intersects.length > 0) {
+                const node = intersects[0].object;
+                if (hoveredNode !== node) {
+                    // Reset previous hovered
+                    if (hoveredNode) {
+                        hoveredNode.scale.setScalar(1);
+                    }
+                    
+                    hoveredNode = node;
+                    hoveredNode.scale.setScalar(1.3);
+                    
+                    // Update tooltip content
+                    const company = node.userData;
+                    document.getElementById('tooltip-name').textContent = company.name;
+                    
+                    // Map category to thesis
+                    const thesisMap = {
+                        "Data Infrastructure": "Modern Data Stack",
+                        "Data": "Modern Data Stack",
+                        "AI/ML": "GenAI",
+                        "Web3": "Web3",
+                        "Security": "Security",
+                        "Infrastructure": "Infrastructure"
+                    };
+                    document.getElementById('tooltip-thesis').textContent = thesisMap[company.category] || company.category;
+                    
+                    // Extract domain from URL
+                    let domain = company.url;
+                    try {
+                        if (company.url !== '#') {
+                            domain = new URL(company.url).hostname.replace('www.', '');
+                        } else {
+                            domain = company.name.toLowerCase().replace(/\s+/g, '') + '.com';
+                        }
+                    } catch(e) {
+                        domain = company.name.toLowerCase().replace(/\s+/g, '') + '.com';
+                    }
+                    document.getElementById('tooltip-website').textContent = domain;
+                    
+                    canvas.style.cursor = 'pointer';
+                }
+                
+                // Position tooltip above the node
+                const vector = node.position.clone();
+                vector.project(camera);
+                
+                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                const y = -(vector.y * 0.5 - 0.5) * window.innerHeight;
+                
+                tooltip.style.left = x + 'px';
+                tooltip.style.top = y + 'px';
+                tooltip.classList.add('visible');
+                
+            } else {
+                if (hoveredNode) {
+                    hoveredNode.scale.setScalar(1);
+                    hoveredNode = null;
+                    tooltip.classList.remove('visible');
+                    canvas.style.cursor = 'grab';
+                }
+            }
+        }
+        
+        function onMouseClick(event) {
+            // Hide tooltip on click
+            document.getElementById('company-tooltip').classList.remove('visible');
+
+            // Perform raycast at click position to verify empty space
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(nodes);
+
+            if (intersects.length > 0) {
+                // Clicked on a node - zoom to it
+                focusOnCompany(intersects[0].object.userData.id);
+            } else {
+                // Clicked on empty space - exit zoom mode if currently zoomed
+                if (selectedNode) {
+                    showListView();
+                }
+            }
+        }
+
+        // Touch event handlers for mobile
+        let touchStartPos = { x: 0, y: 0 };
+        let lastTouchDistance = 0;
+        let isTouchDragging = false;
+
+        function onTouchStart(event) {
+            event.preventDefault();
+
+            if (event.touches.length === 1) {
+                isTouchDragging = true;
+                touchStartPos = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+                previousMousePosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+            } else if (event.touches.length === 2) {
+                // Pinch zoom - calculate initial distance
+                const dx = event.touches[0].clientX - event.touches[1].clientX;
+                const dy = event.touches[0].clientY - event.touches[1].clientY;
+                lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
+            }
+        }
+
+        function onTouchMove(event) {
+            event.preventDefault();
+
+            if (event.touches.length === 1 && isTouchDragging) {
+                // Single finger - rotate
+                const deltaX = event.touches[0].clientX - previousMousePosition.x;
+                const deltaY = event.touches[0].clientY - previousMousePosition.y;
+
+                targetRotation.y += deltaX * 0.005;
+                targetRotation.x += deltaY * 0.005;
+                targetRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetRotation.x));
+
+                previousMousePosition = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+            } else if (event.touches.length === 2) {
+                // Pinch zoom
+                const dx = event.touches[0].clientX - event.touches[1].clientX;
+                const dy = event.touches[0].clientY - event.touches[1].clientY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (lastTouchDistance > 0) {
+                    const delta = lastTouchDistance - distance;
+                    targetDistance += delta * 0.1;
+                    targetDistance = Math.max(20, Math.min(100, targetDistance));
+                }
+
+                lastTouchDistance = distance;
+            }
+        }
+
+        function onTouchEnd(event) {
+            if (event.touches.length === 0) {
+                // Check if it was a tap (not a drag)
+                const endX = event.changedTouches[0].clientX;
+                const endY = event.changedTouches[0].clientY;
+                const moved = Math.abs(endX - touchStartPos.x) + Math.abs(endY - touchStartPos.y);
+
+                if (moved < 10) {
+                    // This was a tap - simulate click
+                    mouse.x = (endX / window.innerWidth) * 2 - 1;
+                    mouse.y = -(endY / window.innerHeight) * 2 + 1;
+                    raycaster.setFromCamera(mouse, camera);
+                    const intersects = raycaster.intersectObjects(nodes);
+
+                    // Hide tooltip on tap
+                    document.getElementById('company-tooltip').classList.remove('visible');
+
+                    if (intersects.length > 0) {
+                        // Tapped on a node - zoom to it
+                        const node = intersects[0].object;
+                        focusOnCompany(node.userData.id);
+                    } else {
+                        // Tapped on empty space - exit zoom mode if currently zoomed
+                        if (selectedNode) {
+                            showListView();
+                        }
+                    }
+                }
+
+                isTouchDragging = false;
+                lastTouchDistance = 0;
+            }
+        }
+
+        // Camera rotation state
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let cameraRotation = { x: 0, y: 0 };
+        let targetRotation = { x: 0, y: 0 };
+        let cameraDistance = 50;
+        let targetDistance = 50;
+        let zoomSpeed = 0.05; // Normal zoom speed
+        let rotationSpeed = 0.05; // Normal rotation speed
+        let autoRotate = true; // Auto-rotation control
+        
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+            canvas.style.cursor = 'grabbing';
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            canvas.style.cursor = 'grab';
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+                
+                targetRotation.y += deltaX * 0.005;
+                targetRotation.x += deltaY * 0.005;
+                
+                // Clamp vertical rotation
+                targetRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, targetRotation.x));
+                
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+        });
+        
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            // Reset to normal speed on manual interaction
+            zoomSpeed = 0.05;
+            rotationSpeed = 0.05;
+            
+            const previousDistance = targetDistance;
+            targetDistance += e.deltaY * 0.05;
+            targetDistance = Math.max(20, Math.min(100, targetDistance));
+            
+            const titleOverlay = document.getElementById('title-overlay');
+            
+            // Trigger title animation when zooming IN (distance decreasing)
+            if (targetDistance < previousDistance && targetDistance < 45) {
+                if (!titleOverlay.classList.contains('positioned')) {
+                    titleOverlay.classList.add('positioned');
+                }
+            }
+            
+            // Reverse animation when zooming OUT (distance increasing)
+            if (targetDistance > previousDistance && targetDistance > 50) {
+                if (titleOverlay.classList.contains('positioned')) {
+                    titleOverlay.classList.remove('positioned');
+                }
+            }
+        });
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Smooth camera rotation and zoom
+            cameraRotation.x += (targetRotation.x - cameraRotation.x) * rotationSpeed;
+            cameraRotation.y += (targetRotation.y - cameraRotation.y) * rotationSpeed;
+            cameraDistance += (targetDistance - cameraDistance) * zoomSpeed;
+            
+            // Auto-rotate slowly only if enabled
+            if (autoRotate) {
+                targetRotation.y += 0.001;
+            }
+            
+            // Update camera position
+            camera.position.x = Math.sin(cameraRotation.y) * Math.cos(cameraRotation.x) * cameraDistance;
+            camera.position.y = Math.sin(cameraRotation.x) * cameraDistance;
+            camera.position.z = Math.cos(cameraRotation.y) * Math.cos(cameraRotation.x) * cameraDistance;
+            camera.lookAt(0, 0, 0);
+            
+            // Animate nodes (gentle float)
+            nodes.forEach((node, i) => {
+                node.position.y += Math.sin(Date.now() * 0.001 + i) * 0.002;
+            });
+            
+            renderer.render(scene, camera);
+        }
+        
+        // ═══════════════════════════════════════════════════════════════════
+        // UI FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════════
+        
+        // Group protocols by category
+        const categoryGroups = {
+            "SWAP & DEX": ["DEX"],
+            "LENDING": ["Lending"],
+            "LIQUID STAKING": ["Staking"],
+            "LIQUIDITY": ["Liquidity"],
+            "YIELD FARMING": ["Yield"],
+            "DERIVATIVES": ["Derivatives"]
+        };
+
+        const categoryDotClass = {
+            "DEX": "dex",
+            "Lending": "lending",
+            "Staking": "staking",
+            "Liquidity": "liquidity",
+            "Yield": "yield",
+            "Derivatives": "derivatives"
+        };
+        
+        function renderCompanyList(filter = '') {
+            const container = document.getElementById('company-list');
+            container.innerHTML = '';
+            
+            // Filter companies
+            let filteredCompanies = companies.filter(c => {
+                return c.name.toLowerCase().includes(filter.toLowerCase()) ||
+                       c.category.toLowerCase().includes(filter.toLowerCase());
+            });
+            
+            // Group by category
+            for (const [groupName, categories] of Object.entries(categoryGroups)) {
+                const groupCompanies = filteredCompanies.filter(c => categories.includes(c.category));
+                
+                if (groupCompanies.length > 0) {
+                    const categoryTitle = document.createElement('div');
+                    categoryTitle.className = 'category-title';
+                    categoryTitle.textContent = groupName;
+                    container.appendChild(categoryTitle);
+                    
+                    const list = document.createElement('div');
+                    list.className = 'company-list';
+                    
+                    groupCompanies.forEach(company => {
+                        const item = document.createElement('div');
+                        item.className = 'company-item';
+                        item.dataset.id = company.id;
+                        item.onclick = (e) => {
+                            e.stopPropagation();
+                            focusOnCompany(company.id);
+                        };
+                        
+                        item.innerHTML = `
+                            <div class="company-info">
+                                <span class="company-dot ${categoryDotClass[company.category] || 'data'}"></span>
+                                <span class="company-name">${company.name}</span>
+                            </div>
+                            <a href="${company.url}" target="_blank" class="company-link" onclick="event.stopPropagation()">↗</a>
+                        `;
+                        
+                        list.appendChild(item);
+                    });
+                    
+                    container.appendChild(list);
+                }
+            }
+        }
+        
+        function focusOnCompany(companyId) {
+            const node = nodes.find(n => n.userData.id === companyId);
+            if (node) {
+                selectedNode = node;
+                autoRotate = false; // Stop rotation
+                
+                // Calculate camera angle to face this node and zoom in
+                const pos = node.position;
+                targetRotation.y = Math.atan2(pos.x, pos.z);
+                targetRotation.x = Math.asin(pos.y / pos.length());
+                targetDistance = 42; // Zoom in slightly (less aggressive)
+                
+                // Use slower speed for smoother transition
+                zoomSpeed = 0.015;
+                rotationSpeed = 0.025;
+                
+                // Trigger title animation (move to top-left)
+                const titleOverlay = document.getElementById('title-overlay');
+                if (!titleOverlay.classList.contains('positioned')) {
+                    titleOverlay.classList.add('positioned');
+                }
+                
+                // Show detail view
+                highlightCompanyInPanel(companyId);
+                
+                // Update URL
+                const url = new URL(window.location);
+                url.searchParams.set('node', companyId);
+                url.searchParams.set('company', node.userData.name);
+                window.history.pushState({}, '', url);
+            }
+        }
+        
+        function highlightCompanyInPanel(companyId) {
+            const company = companies.find(c => c.id === companyId);
+            if (!company) return;
+            
+            const toggleBtn = document.getElementById('toggle-panel');
+            const panelTitle = document.getElementById('panel-title');
+            const backBtn = document.getElementById('back-btn');
+            const listView = document.getElementById('list-view');
+            const detailView = document.getElementById('detail-view');
+            
+            // Update title to show selected company
+            panelTitle.textContent = company.name;
+            
+            // Show back button
+            backBtn.style.display = 'flex';
+            toggleBtn.textContent = '−';
+            
+            // Switch to detail view
+            listView.style.display = 'none';
+            detailView.style.display = 'block';
+            
+            // Populate detail view
+            const categoryMap = {
+                "Data Infrastructure": "MODERN DATA STACK",
+                "Data": "MODERN DATA STACK",
+                "AI/ML": "GENAI",
+                "Web3": "WEB3",
+                "Security": "SECURITY",
+                "Infrastructure": "INFRASTRUCTURE"
+            };
+            
+            document.getElementById('detail-category').textContent = categoryMap[company.category] || company.category.toUpperCase();
+            document.getElementById('detail-name').textContent = company.name;
+            document.getElementById('detail-description').textContent = company.description;
+            document.getElementById('detail-stage').textContent = company.stage;
+            document.getElementById('detail-year').textContent = company.year;
+            document.getElementById('detail-location').textContent = company.location;
+            document.getElementById('detail-employees').textContent = company.employees;
+            document.getElementById('detail-link').href = company.url;
+            document.getElementById('detail-link-icon').href = company.url;
+            
+            // Set dot color
+            const dot = document.getElementById('detail-dot');
+            dot.className = 'company-dot ' + (categoryDotClass[company.category] || 'data');
+        }
+        
+        function showListView() {
+            const panelTitle = document.getElementById('panel-title');
+            const backBtn = document.getElementById('back-btn');
+            const listView = document.getElementById('list-view');
+            const detailView = document.getElementById('detail-view');
+            const toggleBtn = document.getElementById('toggle-panel');
+            
+            // Reset title
+            panelTitle.textContent = 'Join the universe';
+            
+            // Hide back button
+            backBtn.style.display = 'none';
+            
+            // Hide both views (collapsed state)
+            listView.style.display = 'none';
+            detailView.style.display = 'none';
+            toggleBtn.textContent = '+';
+            
+            // Restart rotation
+            autoRotate = true;
+            selectedNode = null;
+            
+            // Zoom out with slow speed
+            targetDistance = 50;
+            zoomSpeed = 0.015;
+            rotationSpeed = 0.025;
+            
+            // Reverse title animation (move back to center)
+            const titleOverlay = document.getElementById('title-overlay');
+            if (titleOverlay.classList.contains('positioned')) {
+                titleOverlay.classList.remove('positioned');
+            }
+            
+            // Clear URL params
+            const url = new URL(window.location);
+            url.searchParams.delete('node');
+            url.searchParams.delete('company');
+            window.history.pushState({}, '', url);
+        }
+        
+        function togglePanel() {
+            const btn = document.getElementById('toggle-panel');
+            const listView = document.getElementById('list-view');
+            const detailView = document.getElementById('detail-view');
+            const backBtn = document.getElementById('back-btn');
+            const panelTitle = document.getElementById('panel-title');
+            
+            // Check if any view is visible
+            const isExpanded = listView.style.display !== 'none' || detailView.style.display !== 'none';
+            
+            if (isExpanded) {
+                // Collapse - hide both views
+                listView.style.display = 'none';
+                detailView.style.display = 'none';
+                backBtn.style.display = 'none';
+                btn.textContent = '+';
+                panelTitle.textContent = 'Join the universe';
+            } else {
+                // Expand - show list view
+                listView.style.display = 'block';
+                detailView.style.display = 'none';
+                btn.textContent = '−';
+            }
+        }
+        
+        function zoomToOverview() {
+            // Reset all state
+            showListView();
+        }
+        
+        function zoomToRandom() {
+            const randomCompany = companies[Math.floor(Math.random() * companies.length)];
+            focusOnCompany(randomCompany.id);
+        }
+        
+        function openJoinModal() {
+            document.getElementById('join-modal').classList.add('visible');
+        }
+        
+        function closeJoinModal() {
+            document.getElementById('join-modal').classList.remove('visible');
+        }
+        
+        // Close modal on overlay click
+        document.getElementById('join-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'join-modal') {
+                closeJoinModal();
+            }
+        });
+        
+        // Form submit
+        document.getElementById('join-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Thanks for submitting! We\'ll review your company.');
+            closeJoinModal();
+        });
+        
+        // Search functionality
+        document.getElementById('search-company').addEventListener('input', (e) => {
+            renderCompanyList(e.target.value);
+        });
+        
+        // Check URL params on load
+        function checkUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const nodeId = params.get('node');
+            const companyName = params.get('company');
+            
+            if (nodeId || companyName) {
+                const company = companies.find(c => 
+                    c.id === parseInt(nodeId) || c.name === companyName
+                );
+                if (company) {
+                    setTimeout(() => focusOnCompany(company.id), 1500);
+                }
+            }
+        }
+        
+        // Initialize
+        init();
+        renderCompanyList(); // Render company list
+        checkUrlParams();
+    </script>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        (function() {
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const menuOverlay = document.getElementById('mobileMenuOverlay');
+            const menuClose = document.getElementById('mobileMenuClose');
+
+            if (menuBtn && menuOverlay && menuClose) {
+                menuBtn.addEventListener('click', function() {
+                    menuOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+
+                menuClose.addEventListener('click', function() {
+                    menuOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+
+                menuOverlay.addEventListener('click', function(e) {
+                    if (e.target === menuOverlay) {
+                        menuOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && menuOverlay.classList.contains('active')) {
+                        menuOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+            }
+        })();
+    </script>
+
+    <!-- Logo Scroll Resize Script -->
+    <script>
+    (function() {
+        'use strict';
+
+        const header = document.querySelector('.header');
+        const titleOverlay = document.querySelector('.title-overlay');
+
+        if (!header) return;
+
+        // For Three.js pages: sync with title-overlay positioning
+        if (titleOverlay) {
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'class') {
+                        if (titleOverlay.classList.contains('positioned')) {
+                            header.classList.add('scrolled');
+                        } else {
+                            header.classList.remove('scrolled');
+                        }
+                    }
+                });
+            });
+
+            observer.observe(titleOverlay, { attributes: true });
+
+            // Check initial state
+            if (titleOverlay.classList.contains('positioned')) {
+                header.classList.add('scrolled');
+            }
+        }
+
+        // Also listen for regular scroll (fallback)
+        const CONFIG = { scrollThreshold: 50 };
+        let isScrolled = false;
+        let ticking = false;
+
+        function updateHeaderState() {
+            const scrollY = window.scrollY || window.pageYOffset;
+            const shouldBeScrolled = scrollY > CONFIG.scrollThreshold;
+
+            if (shouldBeScrolled !== isScrolled) {
+                isScrolled = shouldBeScrolled;
+                if (isScrolled) {
+                    header.classList.add('scrolled');
+                } else if (!titleOverlay || !titleOverlay.classList.contains('positioned')) {
+                    header.classList.remove('scrolled');
+                }
+            }
+            ticking = false;
+        }
+
+        function onScroll() {
+            if (!ticking) {
+                requestAnimationFrame(updateHeaderState);
+                ticking = true;
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        updateHeaderState();
+    })();
+    </script>
+</body>
+</html>

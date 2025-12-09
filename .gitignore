@@ -1,0 +1,66 @@
+# ═══════════════════════════════════════════════════════════════════
+# Mashroom DeFi - .gitignore
+# ═══════════════════════════════════════════════════════════════════
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+.project
+.settings/
+
+# Temporary Files
+*.tmp
+*.temp
+*.log
+*.bak
+
+# Build outputs (if any)
+dist/
+build/
+.cache/
+
+# Node.js (if using local dev server)
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Python (if using http.server)
+__pycache__/
+*.py[cod]
+
+# Planning/Development files (not for production)
+*_PLAN.xml
+*_PLAN.md
+PLANNING_*.md
+TODO.md
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+
+# Media (large files)
+*.mp4
+*.mov
+*.avi
+
+# Backup files
+*.backup
+*.bak_*
+
+# Local environment
+.env
+.env.local

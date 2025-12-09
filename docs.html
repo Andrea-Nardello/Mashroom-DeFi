@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn DeFi - Mashroom</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* ═══════════════════════════════════════════════════════════════════
+           CSS VARIABLES
+           ═══════════════════════════════════════════════════════════════════ */
+
+        :root {
+            --color-bg: #FAFAFA;
+            --color-text-primary: #0A0A0A;
+            --color-text-secondary: #666666;
+            --color-text-tertiary: #999999;
+            --color-border: #E5E5E5;
+            --color-accent: #E85D04;
+            --font-sans: "Space Grotesk", sans-serif;
+            --font-serif: "Playfair Display", Georgia, serif;
+
+            --header-height: 5rem;
+            --transition-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            /* Page-by-page scroll behavior - snaps to each section like pages */
+            scroll-snap-type: y mandatory;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           HEADER - Dynamic Logo
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* GRADIENT TRASPARENTE - stato iniziale */
+            background: linear-gradient(to bottom,
+                rgba(250, 250, 250, 0.95) 0%,
+                rgba(250, 250, 250, 0.6) 60%,
+                transparent 100%
+            );
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: padding 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+                        background 0.4s ease,
+                        backdrop-filter 0.4s ease,
+                        box-shadow 0.4s ease;
+        }
+
+        .header.scrolled {
+            padding: 0.75rem 3rem;
+            /* BACKGROUND OPACO - stato scrolled */
+            background: rgba(250, 250, 250, 0.98);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo-image {
+            height: 130px;
+            width: auto;
+            transition: height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            will-change: height;
+        }
+
+        .header.scrolled .logo-image {
+            height: 36px;
+        }
+
+        .logo-text {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            margin-left: 0.75rem;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .header.scrolled .logo-text {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Responsive Logo */
+        @media (max-width: 1024px) {
+            .logo-image {
+                height: 100px;
+            }
+            .header.scrolled .logo-image {
+                height: 32px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logo-image {
+                height: 80px;
+            }
+            .header.scrolled .logo-image {
+                height: 28px;
+            }
+        }
+
+        /* Accessibility: Respect reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            .logo-image, .logo-text, .header {
+                transition: none !important;
+            }
+        }
+
+        .logo:hover .logo-image {
+            opacity: 0.8;
+        }
+
+        .nav {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            position: relative;
+            padding-bottom: 0.5rem;
+            transition: color 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--color-text-secondary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: var(--color-accent);
+            border-radius: 50%;
+        }
+
+        .cta-button {
+            font-size: 0.9rem;
+            font-weight: 400;
+            padding: 0.6rem 1.5rem;
+            background-color: var(--color-text-primary);
+            color: var(--color-bg);
+            border-radius: 4px;
+            transition: opacity 0.2s ease;
+        }
+
+        .cta-button:hover {
+            opacity: 0.85;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            width: 44px;
+            height: 44px;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--color-text-primary);
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-menu-btn:hover,
+        .mobile-menu-btn:active {
+            border-color: var(--color-text-primary);
+            background: var(--color-text-primary);
+            color: var(--color-bg);
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(250, 250, 250, 0.98);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            width: 44px;
+            height: 44px;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-menu-close:hover,
+        .mobile-menu-close:active {
+            border-color: var(--color-text-primary);
+            background: var(--color-text-primary);
+            color: var(--color-bg);
+        }
+
+        .mobile-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .mobile-nav-link {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            text-decoration: none;
+            padding: 0.75rem 2rem;
+            transition: color 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-nav-link:hover,
+        .mobile-nav-link:active {
+            color: var(--color-accent);
+        }
+
+        .mobile-nav-link.active {
+            color: var(--color-accent);
+        }
+
+        .mobile-cta {
+            margin-top: 2rem;
+            font-size: 1rem;
+            font-weight: 400;
+            padding: 1rem 2rem;
+            background-color: var(--color-text-primary);
+            color: var(--color-bg);
+            border-radius: 4px;
+            text-decoration: none;
+            min-width: 200px;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           HERO SECTION - Full Viewport Split (Like About Page)
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .hero-section {
+            min-height: 100vh;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            scroll-snap-align: start;
+        }
+
+        .hero-section .split-container {
+            display: flex;
+            min-height: 100vh;
+            padding-top: var(--header-height);
+        }
+
+        /* Left Panel - Hero Content */
+        .hero-panel {
+            width: 50%;
+            min-height: calc(100vh - var(--header-height));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 4rem 3rem 4rem 4rem;
+        }
+
+        .hero-content {
+            max-width: 560px;
+        }
+
+        .hero-title {
+            font-family: var(--font-serif);
+            font-size: clamp(3rem, 6vw, 5.5rem);
+            font-weight: 400;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            margin-bottom: 2rem;
+            color: var(--color-text-primary);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            font-weight: 400;
+            line-height: 1.75;
+            color: var(--color-text-secondary);
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           SCROLL INDICATOR - Minimal Elegant Style
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 4rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            animation: fadeInUp 1.2s ease-out 0.8s both;
+        }
+
+        .scroll-indicator-text {
+            font-size: 0.7rem;
+            font-weight: 300;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--color-text-tertiary);
+        }
+
+        .scroll-indicator-line {
+            width: 1px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--color-text-tertiary), transparent);
+            position: relative;
+        }
+
+        .scroll-indicator-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 12px;
+            background: var(--color-text-primary);
+            animation: scrollPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollPulse {
+            0%, 100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(24px);
+                opacity: 0.3;
+            }
+        }
+
+        .scroll-indicator:hover .scroll-indicator-text {
+            color: var(--color-text-secondary);
+        }
+
+        .scroll-indicator:hover .scroll-indicator-line::after {
+            background: var(--color-accent);
+        }
+
+        /* Right Panel - Globe Illustration */
+        .hero-section .illustration-panel {
+            position: relative;
+            width: 50%;
+            min-height: calc(100vh - var(--header-height));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background-color: var(--color-bg);
+        }
+
+        .globe-container {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: globeFadeIn 1.2s ease-out;
+        }
+
+        .globe-container svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        @keyframes globeFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           LEARNING SECTION - Chapters with Scroll-Snap
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .learning-section {
+            position: relative;
+            /* Content determines height - flows naturally */
+        }
+
+        .learning-container {
+            display: flex;
+            /* No fixed height - chapters flow naturally with window scroll */
+        }
+
+        /* Left Panel - Chapter Content (flows naturally in document) */
+        .chapters-panel {
+            width: 60%;
+            /* Content flows naturally with window scroll - no internal scroll */
+        }
+
+        /* Right Panel - Sticky Navigation */
+        .chapter-nav-panel {
+            width: 40%;
+            padding: 0 3rem;
+            border-left: 1px solid var(--color-border);
+            background-color: var(--color-bg);
+            /* Panel stretches with content */
+        }
+
+        .chapter-nav-sticky {
+            position: sticky;
+            top: calc(var(--header-height) + 2rem);
+            height: fit-content;
+            max-height: calc(100vh - var(--header-height) - 4rem);
+            overflow-y: auto;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           CHAPTER SNAP SECTIONS
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .chapter-snap-section {
+            scroll-snap-align: start;
+            scroll-snap-stop: always; /* Each section is a page - must stop here */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 4rem 4rem 4rem 5rem;
+            border-bottom: 1px solid var(--color-border);
+            /* Ensure header doesn't cover content when scrolling to section */
+            scroll-margin-top: var(--header-height);
+        }
+
+        .chapter-snap-section:last-of-type {
+            border-bottom: none;
+        }
+
+        .chapter-article {
+            max-width: 640px;
+        }
+
+        .chapter-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .chapter-number {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            min-width: 24px;
+        }
+
+        .chapter-title {
+            font-family: var(--font-serif);
+            font-size: 2.25rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            line-height: 1.15;
+        }
+
+        .chapter-intro {
+            font-size: 1.125rem;
+            color: var(--color-text-secondary);
+            line-height: 1.8;
+            margin-bottom: 2.5rem;
+            max-width: 580px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           STICKY CHAPTER NAVIGATION (Right Panel)
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .chapter-nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .chapter-nav-label {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+        }
+
+        .chapter-progress {
+            font-size: 0.875rem;
+            color: var(--color-text-tertiary);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+        }
+
+        .chapter-nav-sticky .chapter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+        }
+
+        .chapter-nav-sticky .chapter-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s var(--transition-smooth);
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            font-weight: 400;
+            position: relative;
+        }
+
+        .chapter-nav-sticky .chapter-item:hover {
+            background-color: rgba(0, 0, 0, 0.03);
+            color: var(--color-text-primary);
+        }
+
+        /* Active state with accent indicator */
+        .chapter-nav-sticky .chapter-item.active {
+            color: var(--color-text-primary);
+            font-weight: 500;
+            background-color: rgba(0, 0, 0, 0.04);
+            padding-left: 1.5rem;
+        }
+
+        .chapter-nav-sticky .chapter-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: var(--color-accent);
+            border-radius: 50%;
+        }
+
+        .chapter-nav-sticky .chapter-item .chapter-number {
+            font-size: 0.7rem;
+            color: var(--color-text-tertiary);
+            font-weight: 300;
+            min-width: 18px;
+        }
+
+        .chapter-nav-sticky .chapter-item.active .chapter-number {
+            color: var(--color-text-secondary);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           SUBSECTIONS - Expandable on Hover
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .subsection-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .subsection-item {
+            border-top: 1px solid var(--color-border);
+            padding: 1.25rem 0;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .subsection-item:last-child {
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .subsection-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            transition: color 0.2s ease;
+        }
+
+        .subsection-icon {
+            font-size: 1rem;
+            color: var(--color-text-tertiary);
+            transition: transform 0.3s ease, color 0.2s ease;
+            font-weight: 300;
+        }
+
+        /* Desktop: hover still works */
+        @media (min-width: 769px) {
+            .subsection-item:hover .subsection-icon {
+                transform: rotate(45deg);
+                color: var(--color-accent);
+            }
+        }
+
+        /* Mobile & Desktop: .active class for click behavior */
+        .subsection-item.active .subsection-icon {
+            transform: rotate(45deg);
+            color: var(--color-accent);
+        }
+
+        .subsection-title {
+            font-size: 1.0625rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+        }
+
+        .subsection-badge {
+            font-size: 0.7rem;
+            font-weight: 300;
+            color: var(--color-text-tertiary);
+            margin-left: auto;
+            padding: 0.25rem 0.625rem;
+            background-color: rgba(0, 0, 0, 0.04);
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .subsection-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.4s ease, padding 0.4s ease;
+            opacity: 0;
+            padding-top: 0;
+        }
+
+        /* Desktop: hover expansion */
+        @media (min-width: 769px) {
+            .subsection-item:hover .subsection-content {
+                max-height: 500px;
+                opacity: 1;
+                padding-top: 1.25rem;
+            }
+        }
+
+        /* Mobile & Desktop: click expansion via .active class */
+        .subsection-item.active .subsection-content {
+            max-height: 500px;
+            opacity: 1;
+            padding-top: 1.25rem;
+        }
+
+        .subsection-text {
+            font-size: 0.9375rem;
+            line-height: 1.8;
+            color: var(--color-text-secondary);
+        }
+
+        .subsection-text p {
+            margin-bottom: 1rem;
+        }
+
+        .subsection-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Highlight box styling */
+        .highlight-box {
+            background-color: rgba(232, 93, 4, 0.06);
+            border-left: 3px solid var(--color-accent);
+            padding: 1rem 1.25rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .highlight-box p {
+            margin-bottom: 0;
+            font-size: 0.875rem;
+            color: var(--color-text-primary);
+        }
+
+        /* Protocol tags */
+        .protocol-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .protocol-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            background-color: rgba(0, 0, 0, 0.04);
+            border-radius: 100px;
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .protocol-tag:hover {
+            background-color: rgba(0, 0, 0, 0.08);
+            color: var(--color-text-primary);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           FOOTER SECTION
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .chapter-footer-section {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 6rem 4rem;
+        }
+
+        .chapter-footer {
+            max-width: 500px;
+        }
+
+        .footer-title {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+            color: var(--color-text-primary);
+        }
+
+        .footer-description {
+            font-size: 1.125rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 2.5rem;
+            line-height: 1.75;
+        }
+
+        .footer-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .footer-primary-btn {
+            padding: 1rem 2rem;
+            background-color: var(--color-text-primary);
+            color: var(--color-bg);
+            border-radius: 6px;
+            font-weight: 500;
+            transition: opacity 0.2s ease;
+        }
+
+        .footer-primary-btn:hover {
+            opacity: 0.85;
+        }
+
+        .footer-secondary-btn {
+            padding: 1rem 2rem;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-weight: 400;
+            color: var(--color-text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .footer-secondary-btn:hover {
+            border-color: var(--color-text-primary);
+            color: var(--color-text-primary);
+        }
+
+        .footer-legal {
+            font-size: 0.85rem;
+            color: var(--color-text-tertiary);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           SCROLL PROGRESS INDICATOR
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .progress-line {
+            display: none; /* Hidden - progress line removed */
+        }
+
+        .progress-line-fill {
+            display: none;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           RESPONSIVE - TABLET (1024px)
+           ═══════════════════════════════════════════════════════════════════ */
+
+        @media (max-width: 1024px) {
+            /* CRITICAL FIX: Disable scroll-snap entirely for tablet/mobile */
+            html {
+                scroll-snap-type: none !important;
+                -webkit-overflow-scrolling: touch;
+                overflow-y: auto;
+            }
+
+            body {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Hero Section */
+            .hero-section .split-container {
+                flex-direction: column;
+            }
+
+            .hero-panel {
+                width: 100%;
+                min-height: auto;
+                padding: 3rem 2rem;
+                order: 2;
+            }
+
+            .hero-section .illustration-panel {
+                width: 100%;
+                min-height: 45vh;
+                order: 1;
+            }
+
+            .globe-container {
+                max-width: 320px;
+            }
+
+            /* Learning Section */
+            .learning-container {
+                flex-direction: column;
+            }
+
+            .chapters-panel {
+                width: 100%;
+                height: auto;
+                overflow: visible;
+                scroll-snap-type: none;
+                position: relative;
+            }
+
+            .chapter-snap-section {
+                min-height: auto;
+                padding: 3rem 2rem;
+                scroll-snap-align: none;
+            }
+
+            .chapter-nav-panel {
+                display: none;
+            }
+
+            .progress-line {
+                display: none;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           RESPONSIVE - MOBILE (768px)
+           ═══════════════════════════════════════════════════════════════════ */
+
+        @media (max-width: 768px) {
+            /* CRITICAL FIX: Completely disable scroll-snap and enable natural touch scrolling */
+            html {
+                scroll-snap-type: none !important;
+                -webkit-overflow-scrolling: touch;
+                overflow-y: auto;
+            }
+
+            body {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Remove all snap alignment from sections */
+            .hero-section,
+            .chapter-snap-section {
+                scroll-snap-align: none !important;
+                scroll-snap-stop: normal !important;
+                min-height: auto;
+            }
+
+            .header {
+                padding: 1rem 1.5rem;
+            }
+
+            .nav {
+                display: none;
+            }
+
+            .cta-button {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            /* Hero */
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-description {
+                font-size: 1rem;
+            }
+
+            .hero-panel {
+                padding: 2rem 1.5rem;
+                min-height: auto;
+            }
+
+            .hero-section .illustration-panel {
+                min-height: 35vh;
+                padding: 1rem;
+            }
+
+            .globe-container {
+                max-width: 240px;
+            }
+
+            /* Chapters */
+            .chapter-snap-section {
+                padding: 2rem 1.5rem;
+            }
+
+            .chapter-title {
+                font-size: 1.75rem;
+            }
+
+            .chapter-intro {
+                font-size: 1rem;
+            }
+
+            .subsection-title {
+                font-size: 1rem;
+            }
+
+            .subsection-header {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .subsection-badge {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+
+            /* Footer */
+            .footer-actions {
+                flex-direction: column;
+            }
+
+            .footer-primary-btn,
+            .footer-secondary-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           MOBILE CHAPTER NAVIGATION
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .mobile-chapter-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--color-bg);
+            border-top: 1px solid var(--color-border);
+            padding: 1rem 1.5rem;
+            z-index: 900;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+        }
+
+        @media (max-width: 1024px) {
+            .mobile-chapter-nav {
+                display: block;
+            }
+        }
+
+        .mobile-chapter-nav .progress-bar {
+            height: 3px;
+            background: var(--color-border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .mobile-chapter-nav .progress-fill {
+            height: 100%;
+            background: var(--color-accent);
+            transition: width 0.3s ease;
+        }
+
+        .mobile-chapter-nav .current-chapter {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        .mobile-chapter-nav .chapter-name {
+            color: var(--color-text-primary);
+            font-weight: 500;
+        }
+
+        .mobile-chapter-nav .chapter-count {
+            color: var(--color-text-tertiary);
+        }
+
+        /* Hide mobile nav in hero section */
+        .mobile-chapter-nav.hidden {
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           ACCESSIBILITY - Reduced Motion
+           ═══════════════════════════════════════════════════════════════════ */
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+                scroll-snap-type: none;
+            }
+
+            .chapter-snap-section,
+            .hero-section {
+                scroll-snap-align: none;
+            }
+
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="universe.html" class="logo">
+            <img src="assets/logo.png" alt="Mashroom Logo" class="logo-image" loading="eager">
+            <span class="logo-text">Mashroom</span>
+        </a>
+
+        <nav class="nav">
+            <a href="universe.html" class="nav-link">Universe</a>
+            <a href="about.html" class="nav-link">About</a>
+            <a href="docs.html" class="nav-link active">Learning</a>
+            <a href="protocols.html" class="nav-link">Prices</a>
+        </nav>
+
+        <a href="https://forms.gle/yQSqha5P9ivX3Kt78" target="_blank" class="cta-button">Connect with us</a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">☰</button>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">×</button>
+        <nav class="mobile-nav">
+            <a href="universe.html" class="mobile-nav-link">Universe</a>
+            <a href="about.html" class="mobile-nav-link">About</a>
+            <a href="docs.html" class="mobile-nav-link active">Learning</a>
+            <a href="protocols.html" class="mobile-nav-link">Prices</a>
+            <a href="https://forms.gle/yQSqha5P9ivX3Kt78" target="_blank" class="mobile-cta">Connect with us</a>
+        </nav>
+    </div>
+
+    <!-- Progress Line -->
+    <div class="progress-line" id="progressLine">
+        <div class="progress-line-fill" id="progressFill"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         HERO SECTION - Full Viewport Split (Like About Page)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="hero-section" id="heroSection">
+        <div class="split-container">
+            <!-- Left Panel - Hero Content -->
+            <div class="hero-panel">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        Learn how the<br>DeFi World works
+                    </h1>
+                    <p class="hero-description">
+                        Your comprehensive guide to decentralized finance on Solana.
+                        From basic concepts to advanced strategies — everything you
+                        need to navigate the world of DeFi with confidence.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Panel - Globe Illustration (SVG Wireframe) -->
+            <div class="illustration-panel">
+                <div class="globe-container">
+                    <!-- Globe Wireframe SVG - Matches the user's provided image -->
+                    <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Main sphere outline -->
+                        <circle cx="200" cy="200" r="160" stroke="#0A0A0A" stroke-width="1.5" fill="none"/>
+
+                        <!-- Vertical longitude lines (meridians) -->
+                        <ellipse cx="200" cy="200" rx="160" ry="160" stroke="#0A0A0A" stroke-width="1" fill="none"/>
+                        <ellipse cx="200" cy="200" rx="120" ry="160" stroke="#0A0A0A" stroke-width="1" fill="none"/>
+                        <ellipse cx="200" cy="200" rx="70" ry="160" stroke="#0A0A0A" stroke-width="1" fill="none"/>
+                        <ellipse cx="200" cy="200" rx="20" ry="160" stroke="#0A0A0A" stroke-width="1" fill="none"/>
+
+                        <!-- Horizontal latitude lines -->
+                        <ellipse cx="200" cy="120" rx="130" ry="35" stroke="#0A0A0A" stroke-width="1" fill="none"/>
+                        <ellipse cx="200" cy="280" rx="130" ry="35" stroke="#0A0A0A" stroke-width="1" fill="none"/>
+
+                        <!-- Filled latitude bands (the dark bands in the image) -->
+                        <path d="M 55 175
+                                 Q 200 145, 345 175
+                                 Q 200 205, 55 175 Z"
+                              fill="#0A0A0A"/>
+                        <path d="M 55 225
+                                 Q 200 195, 345 225
+                                 Q 200 255, 55 225 Z"
+                              fill="#0A0A0A"/>
+
+                        <!-- Additional meridian curves for depth -->
+                        <path d="M 200 40 Q 80 200, 200 360" stroke="#0A0A0A" stroke-width="1" fill="none"/>
+                        <path d="M 200 40 Q 320 200, 200 360" stroke="#0A0A0A" stroke-width="1" fill="none"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator - Minimal & Elegant -->
+        <div class="scroll-indicator" id="scrollIndicator">
+            <span class="scroll-indicator-text">scroll</span>
+            <div class="scroll-indicator-line"></div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         LEARNING SECTION - Chapters with Scroll-Snap
+         ═══════════════════════════════════════════════════════════════════ -->
+    <section class="learning-section" id="contentStart">
+        <div class="learning-container">
+            <!-- Left Panel - Scrollable Chapter Content -->
+            <div class="chapters-panel" id="chaptersPanel">
+                <!-- Chapter sections will be rendered here by JS -->
+            </div>
+
+            <!-- Right Panel - Sticky Chapter Navigation -->
+            <div class="chapter-nav-panel">
+                <div class="chapter-nav-sticky" id="chapterNavSticky">
+                    <div class="chapter-nav-header">
+                        <span class="chapter-nav-label">Chapters</span>
+                        <span class="chapter-progress" id="chapterProgress">00 / 09</span>
+                    </div>
+                    <nav class="chapter-list" id="chapterList">
+                        <!-- Generated by JS -->
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Chapter Navigation -->
+    <div class="mobile-chapter-nav hidden" id="mobileChapterNav">
+        <div class="progress-bar">
+            <div class="progress-fill" id="mobileProgressFill" style="width: 0%"></div>
+        </div>
+        <div class="current-chapter">
+            <span class="chapter-name" id="mobileChapterName">Intro</span>
+            <span class="chapter-count" id="mobileChapterCount">0 / 9</span>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const CONFIG = {
+                headerHeight: 80
+            };
+
+            // ═══════════════════════════════════════════════════════════════════
+            // CUSTOM SMOOTH SCROLL ANIMATION
+            // Duration: 700ms with ease-out-cubic for elegant deceleration
+            // Hybrid approach: native scroll for wheel/touch, custom for nav clicks
+            // ═══════════════════════════════════════════════════════════════════
+
+            const SCROLL_CONFIG = {
+                duration: 700,  // 700ms - elegant but not sluggish
+                // Ease-out-cubic: fast start, gentle deceleration
+                // Creates intentional, polished feel without being slow
+                easing: (t) => 1 - Math.pow(1 - t, 3)
+            };
+
+            /**
+             * Smoothly scrolls to a target element with custom duration and easing
+             * @param {HTMLElement} target - Element to scroll to
+             * @param {number} offset - Offset from top (e.g., for fixed header)
+             */
+            function smoothScrollTo(target, offset = 0) {
+                const startPosition = window.scrollY;
+                const targetPosition = target.getBoundingClientRect().top + startPosition - offset;
+                const distance = targetPosition - startPosition;
+
+                // Skip animation if distance is negligible
+                if (Math.abs(distance) < 1) return;
+
+                let startTime = null;
+
+                function animationStep(currentTime) {
+                    if (!startTime) startTime = currentTime;
+
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / SCROLL_CONFIG.duration, 1);
+                    const easedProgress = SCROLL_CONFIG.easing(progress);
+
+                    window.scrollTo(0, startPosition + (distance * easedProgress));
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animationStep);
+                    }
+                }
+
+                requestAnimationFrame(animationStep);
+            }
+
+            // DeFi Chapters Data
+            const chapters = [
+                {
+                    id: 'what-is-defi',
+                    number: '01',
+                    title: 'What is DeFi?',
+                    intro: 'Decentralized Finance reimagines traditional financial services using blockchain technology. No banks, no middlemen — just transparent, programmable money.',
+                    subsections: [
+                        {
+                            title: 'The DeFi Revolution',
+                            badge: 'Fundamentals',
+                            content: `
+                                <p>DeFi stands for Decentralized Finance — a movement to rebuild financial services using open, permissionless blockchain networks. Unlike traditional finance, DeFi protocols operate 24/7, are accessible to anyone with an internet connection, and are governed by code rather than institutions.</p>
+                                <div class="highlight-box">
+                                    <p><strong>Key insight:</strong> DeFi removes intermediaries, reducing costs and increasing accessibility for billions of unbanked people worldwide.</p>
+                                </div>
+                            `
+                        },
+                        {
+                            title: 'Why DeFi Matters',
+                            badge: 'Benefits',
+                            content: `
+                                <p>Traditional finance requires trusted third parties — banks, brokers, and clearinghouses. DeFi replaces trust in institutions with trust in code. Smart contracts automatically execute transactions when conditions are met.</p>
+                                <p>Benefits include: permissionless access, composability (protocols can build on each other), transparency (all transactions are public), and self-custody (you control your assets).</p>
+                            `
+                        },
+                        {
+                            title: 'DeFi vs Traditional Finance',
+                            badge: 'Comparison',
+                            content: `
+                                <p>In traditional finance, your bank holds your money. In DeFi, you hold your keys. Traditional markets operate during business hours; DeFi runs 24/7/365. Banks can freeze accounts; in DeFi, only you control access.</p>
+                                <p>However, DeFi comes with new risks: smart contract vulnerabilities, volatile assets, and the responsibility of self-custody.</p>
+                            `
+                        }
+                    ]
+                },
+                {
+                    id: 'solana-ecosystem',
+                    number: '02',
+                    title: 'Solana Ecosystem',
+                    intro: 'Solana is the fastest blockchain in the world, capable of processing 65,000 transactions per second with sub-second finality. Here\'s why Mashroom chose Solana.',
+                    subsections: [
+                        {
+                            title: 'Why Solana?',
+                            badge: 'Performance',
+                            content: `
+                                <p>Solana offers unparalleled speed and low costs. Transactions finalize in under 400 milliseconds and cost fractions of a cent. This makes complex DeFi strategies viable that would be impossible on slower, expensive chains.</p>
+                                <div class="highlight-box">
+                                    <p><strong>Stats:</strong> 65,000 TPS capacity, ~400ms finality, $0.00025 average transaction cost</p>
+                                </div>
+                            `
+                        },
+                        {
+                            title: 'The Solana Stack',
+                            badge: 'Technology',
+                            content: `
+                                <p>Solana's innovations include Proof of History (a cryptographic clock), Tower BFT (optimized Byzantine fault tolerance), and Sealevel (parallel smart contract runtime). These allow Solana to scale without sharding or Layer 2 solutions.</p>
+                            `
+                        },
+                        {
+                            title: 'Ecosystem Overview',
+                            badge: 'Protocols',
+                            content: `
+                                <p>Solana hosts a vibrant DeFi ecosystem with $5B+ in Total Value Locked. Major protocols include Jupiter (DEX aggregator), Marinade (liquid staking), and Kamino (automated strategies).</p>
+                                <div class="protocol-tags">
+                                    <span class="protocol-tag">Jupiter</span>
+                                    <span class="protocol-tag">Raydium</span>
+                                    <span class="protocol-tag">Orca</span>
+                                    <span class="protocol-tag">Marinade</span>
+                                    <span class="protocol-tag">MarginFi</span>
+                                </div>
+                            `
+                        }
+                    ]
+                },
+                {
+                    id: 'liquidity-pools',
+                    number: '03',
+                    title: 'Liquidity Pools',
+                    intro: 'Automated Market Makers revolutionized trading by replacing order books with mathematical formulas. Learn how liquidity pools work and how you can provide liquidity.',
+                    subsections: [
+                        {
+                            title: 'How AMMs Work',
+                            badge: 'Mechanics',
+                            content: `
+                                <p>Instead of matching buyers with sellers, AMMs use liquidity pools — smart contracts holding paired tokens. The price is determined by a formula (x * y = k). When you trade, you shift the ratio, moving the price.</p>
+                                <p>Liquidity providers deposit equal values of two tokens and earn trading fees proportional to their share of the pool.</p>
+                            `
+                        },
+                        {
+                            title: 'Providing Liquidity',
+                            badge: 'How To',
+                            content: `
+                                <p>To become an LP (Liquidity Provider), you deposit a pair of tokens into a pool. For example, 1 SOL and $150 USDC into a SOL/USDC pool. You receive LP tokens representing your share.</p>
+                                <div class="highlight-box">
+                                    <p><strong>Example:</strong> Deposit $1,000 into a pool with 0.3% fees and $100K daily volume = ~$1.10/day in fees (40% APY)</p>
+                                </div>
+                            `
+                        },
+                        {
+                            title: 'Concentrated Liquidity',
+                            badge: 'Advanced',
+                            content: `
+                                <p>Concentrated liquidity (CLAMM) lets you focus your capital in specific price ranges. Instead of providing liquidity across all prices, you might provide only between $90-$110 for a $100 asset.</p>
+                                <div class="protocol-tags">
+                                    <span class="protocol-tag">Orca Whirlpools</span>
+                                    <span class="protocol-tag">Raydium CLAMM</span>
+                                    <span class="protocol-tag">Meteora DLMM</span>
+                                </div>
+                            `
+                        }
+                    ]
+                },
+                {
+                    id: 'lending-borrowing',
+                    number: '04',
+                    title: 'Lending & Borrowing',
+                    intro: 'DeFi lending lets you earn interest on idle assets or borrow against your holdings without selling. Understand how money markets work on Solana.',
+                    subsections: [
+                        {
+                            title: 'How DeFi Lending Works',
+                            badge: 'Mechanics',
+                            content: `
+                                <p>DeFi money markets pool deposits from lenders and make them available to borrowers. Interest rates are set algorithmically based on utilization — when more is borrowed, rates rise.</p>
+                                <p>All loans are over-collateralized, meaning borrowers must deposit more than they borrow. This protects lenders even if the borrower defaults.</p>
+                            `
+                        },
+                        {
+                            title: 'Earning Yield as a Lender',
+                            badge: 'Strategies',
+                            content: `
+                                <p>Deposit stablecoins like USDC to earn 5-15% APY, or volatile assets like SOL for lower but still attractive rates. Many protocols offer additional token incentives on top of base rates.</p>
+                                <div class="highlight-box">
+                                    <p><strong>Pro tip:</strong> Compare rates across MarginFi, Kamino, and Solend — they can vary significantly based on utilization.</p>
+                                </div>
+                            `
+                        },
+                        {
+                            title: 'Solana Lending Protocols',
+                            badge: 'Ecosystem',
+                            content: `
+                                <p>Major Solana lending protocols each have unique features. MarginFi offers cross-margin for capital efficiency, Kamino provides automated strategies, and Solend pioneered algorithmic interest rates on Solana.</p>
+                                <div class="protocol-tags">
+                                    <span class="protocol-tag">MarginFi</span>
+                                    <span class="protocol-tag">Kamino</span>
+                                    <span class="protocol-tag">Solend</span>
+                                    <span class="protocol-tag">Hubble</span>
+                                </div>
+                            `
+                        }
+                    ]
+                },
+                {
+                    id: 'yield-farming',
+                    number: '05',
+                    title: 'Yield Farming',
+                    intro: 'Yield farming combines multiple DeFi protocols to maximize returns. Learn the strategies, understand the risks, and discover how Mashroom automates the process.',
+                    subsections: [
+                        {
+                            title: 'What is Yield Farming?',
+                            badge: 'Definition',
+                            content: `
+                                <p>Yield farming is the practice of moving assets between DeFi protocols to maximize returns. Farmers might provide liquidity, stake tokens, lend assets, and reinvest rewards — all to compound their yields.</p>
+                                <p>Returns come from trading fees, interest, token incentives, and governance rewards. Skilled farmers can earn 20-100%+ APY, but risks scale with returns.</p>
+                            `
+                        },
+                        {
+                            title: 'Common Strategies',
+                            badge: 'Approaches',
+                            content: `
+                                <p><strong>Stable farming:</strong> Provide liquidity to stablecoin pairs for lower risk, moderate returns (10-30% APY).</p>
+                                <p><strong>Delta-neutral:</strong> Hedge directional exposure while earning yield from funding rates or liquidity provision.</p>
+                                <p><strong>Leveraged farming:</strong> Borrow to amplify positions. Higher returns, but liquidation risk.</p>
+                            `
+                        },
+                        {
+                            title: 'APY vs APR',
+                            badge: 'Important',
+                            content: `
+                                <p>APR (Annual Percentage Rate) is simple interest — what you'd earn without reinvesting. APY (Annual Percentage Yield) includes compounding — reinvesting earnings to earn more.</p>
+                                <div class="highlight-box">
+                                    <p><strong>Example:</strong> 50% APR compounded daily = 64.87% APY. The more frequently you compound, the higher your effective yield.</p>
+                                </div>
+                            `
+                        }
+                    ]
+                },
+                {
+                    id: 'liquid-staking',
+                    number: '06',
+                    title: 'Liquid Staking',
+                    intro: 'Traditional staking locks your SOL. Liquid staking gives you a token representing staked SOL that you can use in DeFi while still earning staking rewards.',
+                    subsections: [
+                        {
+                            title: 'How Liquid Staking Works',
+                            badge: 'Mechanics',
+                            content: `
+                                <p>Deposit SOL into a liquid staking protocol, receive a liquid staking token (LST) like mSOL, JitoSOL, or bSOL. Your SOL is staked with validators earning ~7-8% APY, but your LST is freely tradeable.</p>
+                                <p>The LST gradually appreciates against SOL as staking rewards accrue. When you redeem, you get back more SOL than you deposited.</p>
+                            `
+                        },
+                        {
+                            title: 'Popular LSTs on Solana',
+                            badge: 'Tokens',
+                            content: `
+                                <p><strong>mSOL (Marinade):</strong> The original Solana LST, decentralized validator set</p>
+                                <p><strong>JitoSOL (Jito):</strong> Includes MEV rewards, slightly higher yields</p>
+                                <p><strong>bSOL (BlazeStake):</strong> Emphasizes decentralization</p>
+                                <div class="protocol-tags">
+                                    <span class="protocol-tag">mSOL 7.5%</span>
+                                    <span class="protocol-tag">JitoSOL 8.2%</span>
+                                    <span class="protocol-tag">bSOL 7.8%</span>
+                                </div>
+                            `
+                        },
+                        {
+                            title: 'LST DeFi Strategies',
+                            badge: 'Advanced',
+                            content: `
+                                <p>Use LSTs as collateral to borrow stablecoins, then deploy that capital elsewhere. Or provide LST/SOL liquidity — minimal impermanent loss since both appreciate together.</p>
+                                <p>Recursive borrowing: Deposit mSOL, borrow SOL, stake SOL for more mSOL, repeat. Amplifies staking yield but adds liquidation risk.</p>
+                            `
+                        }
+                    ]
+                },
+                {
+                    id: 'key-metrics',
+                    number: '07',
+                    title: 'Key Metrics',
+                    intro: 'Understanding DeFi metrics helps you evaluate opportunities and risks. Here are the essential numbers every DeFi participant should know.',
+                    subsections: [
+                        {
+                            title: 'Total Value Locked (TVL)',
+                            badge: 'Fundamental',
+                            content: `
+                                <p>TVL measures the total assets deposited in a protocol. Higher TVL generally indicates trust and adoption, but doesn't guarantee safety. A protocol with $1B TVL has attracted significant capital.</p>
+                                <div class="highlight-box">
+                                    <p><strong>Watch for:</strong> Sudden TVL drops may indicate problems. Track via DeFiLlama for accurate, real-time data.</p>
+                                </div>
+                            `
+                        },
+                        {
+                            title: 'APY & Risk Score',
+                            badge: 'Returns',
+                            content: `
+                                <p>APY tells you the potential annual return including compounding. Risk Score rates opportunities from 1-10 based on smart contract audits, TVL, team reputation, and historical performance.</p>
+                                <p>Generally: Higher APY = Higher Risk. Be skeptical of yields over 100% APY — they usually come with significant risks.</p>
+                            `
+                        },
+                        {
+                            title: 'Fruiting Score',
+                            badge: 'Mashroom',
+                            content: `
+                                <p>Mashroom's Fruiting Score is a proprietary metric combining yield, risk, and capital efficiency. It helps you find the sweet spot between returns and safety.</p>
+                                <p>A high Fruiting Score means attractive yield for the risk level. We analyze protocol history, audit quality, oracle reliability, and team track record.</p>
+                            `
+                        }
+                    ]
+                },
+                {
+                    id: 'risks-safety',
+                    number: '08',
+                    title: 'Risks & Safety',
+                    intro: 'DeFi offers incredible opportunities but comes with real risks. Understanding and mitigating these risks is essential for long-term success.',
+                    subsections: [
+                        {
+                            title: 'Smart Contract Risk',
+                            badge: 'Technical',
+                            content: `
+                                <p>Smart contracts are code, and code can have bugs. Even audited contracts have been exploited. Look for multiple audits from reputable firms (Halborn, OtterSec, Neodyme for Solana).</p>
+                                <div class="highlight-box">
+                                    <p><strong>Risk mitigation:</strong> Diversify across protocols. Never put more than you can afford to lose in any single contract.</p>
+                                </div>
+                            `
+                        },
+                        {
+                            title: 'Impermanent Loss',
+                            badge: 'LP Risk',
+                            content: `
+                                <p>When you provide liquidity, price divergence between paired assets causes impermanent loss (IL). If SOL doubles while USDC stays flat, you'd have been better off just holding SOL.</p>
+                                <p>IL is "impermanent" because it reverses if prices return to your entry ratio. But if you withdraw at divergence, the loss becomes permanent.</p>
+                            `
+                        },
+                        {
+                            title: 'Other Risks',
+                            badge: 'Complete List',
+                            content: `
+                                <p><strong>Rug pulls:</strong> Team steals funds. Avoid unaudited protocols with anonymous teams.</p>
+                                <p><strong>Oracle manipulation:</strong> Price feeds can be attacked. Use protocols with robust oracle implementations.</p>
+                                <p><strong>Liquidation:</strong> Borrowing positions can be forcibly closed if collateral value drops.</p>
+                                <p><strong>Self-custody:</strong> Lose your keys, lose your crypto. Use hardware wallets for significant holdings.</p>
+                            `
+                        }
+                    ]
+                }
+            ];
+
+            // ═══════════════════════════════════════════════════════════════════
+            // RENDER FUNCTIONS
+            // ═══════════════════════════════════════════════════════════════════
+
+            // Render Chapter Navigation (Right Panel)
+            function renderChapterNav() {
+                const chapterList = document.getElementById('chapterList');
+
+                // Add Hero/Intro as first navigation item
+                const heroItem = document.createElement('a');
+                heroItem.href = '#heroSection';
+                heroItem.className = 'chapter-item';
+                heroItem.dataset.chapter = 'heroSection';
+
+                heroItem.innerHTML = `
+                    <span class="chapter-number">00</span>
+                    <span class="chapter-title-nav">Intro</span>
+                `;
+
+                heroItem.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    scrollToChapter('heroSection');
+                });
+
+                chapterList.appendChild(heroItem);
+
+                // Add all chapters
+                chapters.forEach((chapter, index) => {
+                    const item = document.createElement('a');
+                    item.href = `#${chapter.id}`;
+                    item.className = 'chapter-item';
+                    item.dataset.chapter = chapter.id;
+
+                    item.innerHTML = `
+                        <span class="chapter-number">${chapter.number}</span>
+                        <span class="chapter-title-nav">${chapter.title}</span>
+                    `;
+
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        scrollToChapter(chapter.id);
+                    });
+
+                    chapterList.appendChild(item);
+                });
+            }
+
+            // Render Chapter Content (Left Panel)
+            function renderChapterContent() {
+                const chaptersPanel = document.getElementById('chaptersPanel');
+
+                chapters.forEach((chapter, index) => {
+                    const section = document.createElement('div');
+                    section.id = chapter.id;
+                    section.className = 'chapter-snap-section';
+                    section.dataset.chapterIndex = index;
+
+                    let subsectionsHTML = '';
+                    chapter.subsections.forEach(sub => {
+                        subsectionsHTML += `
+                            <div class="subsection-item">
+                                <div class="subsection-header">
+                                    <span class="subsection-icon">+</span>
+                                    <span class="subsection-title">${sub.title}</span>
+                                    <span class="subsection-badge">${sub.badge}</span>
+                                </div>
+                                <div class="subsection-content">
+                                    <div class="subsection-text">
+                                        ${sub.content}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    section.innerHTML = `
+                        <article class="chapter-article">
+                            <header class="chapter-header">
+                                <span class="chapter-number">${chapter.number}</span>
+                                <h2 class="chapter-title">${chapter.title}</h2>
+                            </header>
+                            <p class="chapter-intro">${chapter.intro}</p>
+                            <div class="subsection-list">
+                                ${subsectionsHTML}
+                            </div>
+                        </article>
+                    `;
+
+                    chaptersPanel.appendChild(section);
+                });
+
+                // Add footer section
+                const footer = document.createElement('div');
+                footer.className = 'chapter-snap-section chapter-footer-section';
+                footer.innerHTML = `
+                    <div class="chapter-footer">
+                        <h3 class="footer-title">Ready to explore?</h3>
+                        <p class="footer-description">
+                            Put your knowledge into practice with Mashroom's intuitive DeFi tools.
+                        </p>
+                        <div class="footer-actions">
+                            <a href="https://forms.gle/yQSqha5P9ivX3Kt78" target="_blank" class="footer-primary-btn">Connect with us</a>
+                            <a href="about.html" class="footer-secondary-btn">About Mashroom</a>
+                        </div>
+                        <p class="footer-legal">© 2025 Mashroom. Not financial advice. DYOR.</p>
+                    </div>
+                `;
+                chaptersPanel.appendChild(footer);
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // SCROLL & NAVIGATION FUNCTIONS
+            // ═══════════════════════════════════════════════════════════════════
+
+            function scrollToChapter(chapterId) {
+                // Determine target element
+                const targetId = (chapterId === 'hero') ? 'heroSection' : chapterId;
+                const target = document.getElementById(targetId);
+
+                if (!target) return;
+
+                // Respect prefers-reduced-motion accessibility setting
+                const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+                if (prefersReducedMotion) {
+                    // Instant scroll for users who prefer reduced motion
+                    window.scrollTo(0, target.getBoundingClientRect().top + window.scrollY);
+                } else {
+                    // Custom smooth scroll with elegant 700ms duration
+                    smoothScrollTo(target, 0);
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // INTERSECTION OBSERVER FOR ACTIVE CHAPTER
+            // ═══════════════════════════════════════════════════════════════════
+
+            function setupChapterTracking() {
+                const progressEl = document.getElementById('chapterProgress');
+                const totalPages = chapters.length + 1; // Include hero as page 00
+
+                const observerOptions = {
+                    root: null, // Use viewport for window scroll (unified scroll context)
+                    rootMargin: '-40% 0px -40% 0px',
+                    threshold: 0
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const chapterId = entry.target.id;
+                            const chapterIndex = entry.target.dataset.chapterIndex;
+
+                            if (chapterIndex !== undefined) {
+                                updateActiveChapter(chapterId);
+                                // Offset by 1 because hero is page 0
+                                updateProgress(parseInt(chapterIndex) + 1, totalPages);
+                                updateMobileNav(chapterId, parseInt(chapterIndex) + 1, totalPages);
+                            }
+                        }
+                    });
+                }, observerOptions);
+
+                document.querySelectorAll('.chapter-snap-section[data-chapter-index]').forEach(section => {
+                    observer.observe(section);
+                });
+            }
+
+            function updateActiveChapter(chapterId) {
+                document.querySelectorAll('.chapter-nav-sticky .chapter-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                const activeItem = document.querySelector(
+                    `.chapter-nav-sticky .chapter-item[data-chapter="${chapterId}"]`
+                );
+                if (activeItem) {
+                    activeItem.classList.add('active');
+                }
+            }
+
+            function updateProgress(current, total) {
+                const progressEl = document.getElementById('chapterProgress');
+                if (progressEl) {
+                    progressEl.textContent = `${String(current).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
+                }
+
+                // Update progress line
+                const progressFill = document.getElementById('progressFill');
+                if (progressFill) {
+                    const percentage = (current / total) * 100;
+                    progressFill.style.height = `${percentage}%`;
+                }
+            }
+
+            function updateMobileNav(chapterId, current, total) {
+                const mobileProgressFill = document.getElementById('mobileProgressFill');
+                const mobileChapterName = document.getElementById('mobileChapterName');
+                const mobileChapterCount = document.getElementById('mobileChapterCount');
+
+                if (mobileProgressFill) {
+                    const percentage = (current / total) * 100;
+                    mobileProgressFill.style.width = `${percentage}%`;
+                }
+
+                if (mobileChapterName) {
+                    if (chapterId === 'heroSection') {
+                        mobileChapterName.textContent = 'Intro';
+                    } else {
+                        const chapter = chapters.find(c => c.id === chapterId);
+                        if (chapter) {
+                            mobileChapterName.textContent = chapter.title;
+                        }
+                    }
+                }
+
+                if (mobileChapterCount) {
+                    mobileChapterCount.textContent = `${current} / ${total}`;
+                }
+            }
+
+            // Track hero section visibility
+            function setupHeroTracking() {
+                const heroSection = document.getElementById('heroSection');
+                const totalPages = chapters.length + 1; // Include hero
+
+                if (!heroSection) return;
+
+                const heroObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+                            updateActiveChapter('heroSection');
+                            updateProgress(0, totalPages);
+                            updateMobileNav('heroSection', 0, totalPages);
+                        }
+                    });
+                }, {
+                    root: null, // viewport
+                    rootMargin: '0px',
+                    threshold: [0.5]
+                });
+
+                heroObserver.observe(heroSection);
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // HERO CTA & SCROLL VISIBILITY
+            // ═══════════════════════════════════════════════════════════════════
+
+            function setupHeroNavigation() {
+                // Setup scroll indicator click - uses custom 700ms smooth scroll
+                const scrollIndicator = document.getElementById('scrollIndicator');
+
+                if (scrollIndicator) {
+                    scrollIndicator.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const contentSection = document.getElementById('contentStart');
+
+                        if (contentSection) {
+                            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+                            if (prefersReducedMotion) {
+                                window.scrollTo(0, contentSection.getBoundingClientRect().top + window.scrollY);
+                            } else {
+                                smoothScrollTo(contentSection, 0);
+                            }
+                        }
+                    });
+                }
+            }
+
+            function setupScrollVisibility() {
+                const progressLine = document.getElementById('progressLine');
+                const mobileChapterNav = document.getElementById('mobileChapterNav');
+                const heroSection = document.getElementById('heroSection');
+
+                if (!heroSection) return;
+
+                const heroHeight = heroSection.offsetHeight;
+
+                window.addEventListener('scroll', () => {
+                    const scrollY = window.scrollY;
+
+                    // Show/hide progress line
+                    if (progressLine) {
+                        if (scrollY > heroHeight - 100) {
+                            progressLine.classList.add('visible');
+                        } else {
+                            progressLine.classList.remove('visible');
+                        }
+                    }
+
+                    // Show/hide mobile nav
+                    if (mobileChapterNav) {
+                        if (scrollY > heroHeight - 100) {
+                            mobileChapterNav.classList.remove('hidden');
+                        } else {
+                            mobileChapterNav.classList.add('hidden');
+                        }
+                    }
+                });
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // MOBILE MENU
+            // ═══════════════════════════════════════════════════════════════════
+
+            function setupMobileMenu() {
+                const mobileBtn = document.getElementById('mobileMenuBtn');
+                // For now, just a placeholder - could open a mobile menu overlay
+                if (mobileBtn) {
+                    mobileBtn.addEventListener('click', () => {
+                        // Toggle mobile menu (could be implemented)
+                        console.log('Mobile menu clicked');
+                    });
+                }
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // INITIALIZE
+            // ═══════════════════════════════════════════════════════════════════
+
+            function init() {
+                renderChapterNav();
+                renderChapterContent();
+                setupChapterTracking();
+                setupHeroTracking(); // Track hero section visibility
+                setupHeroNavigation();
+                setupScrollVisibility();
+                setupMobileMenu();
+
+                // Set hero section as active initially
+                updateActiveChapter('heroSection');
+
+                // Handle URL hash
+                if (window.location.hash) {
+                    const chapterId = window.location.hash.slice(1);
+                    setTimeout(() => {
+                        if (chapterId === 'contentStart') {
+                            document.getElementById('contentStart')?.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                            scrollToChapter(chapterId);
+                        }
+                    }, 100);
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+
+    <!-- Subsection Click Toggle Script (One at a time) -->
+    <script>
+        (function() {
+            // Wait for content to be rendered
+            function setupSubsectionToggle() {
+                const subsectionItems = document.querySelectorAll('.subsection-item');
+
+                subsectionItems.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        // Don't interfere with links inside subsection content
+                        if (e.target.closest('a')) return;
+
+                        const isActive = this.classList.contains('active');
+
+                        // Close all other subsections (one at a time behavior)
+                        subsectionItems.forEach(otherItem => {
+                            otherItem.classList.remove('active');
+                        });
+
+                        // Toggle current one
+                        if (!isActive) {
+                            this.classList.add('active');
+                        }
+                    });
+                });
+            }
+
+            // Run after DOM content is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Small delay to ensure dynamic content is rendered
+                    setTimeout(setupSubsectionToggle, 150);
+                });
+            } else {
+                setTimeout(setupSubsectionToggle, 150);
+            }
+        })();
+    </script>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        (function() {
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const menuOverlay = document.getElementById('mobileMenuOverlay');
+            const menuClose = document.getElementById('mobileMenuClose');
+
+            if (menuBtn && menuOverlay && menuClose) {
+                menuBtn.addEventListener('click', function() {
+                    menuOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+
+                menuClose.addEventListener('click', function() {
+                    menuOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+
+                menuOverlay.addEventListener('click', function(e) {
+                    if (e.target === menuOverlay) {
+                        menuOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && menuOverlay.classList.contains('active')) {
+                        menuOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+            }
+        })();
+    </script>
+
+    <!-- Logo Scroll Resize Script -->
+    <script>
+    (function() {
+        'use strict';
+
+        const CONFIG = { scrollThreshold: 50 };
+        const header = document.querySelector('.header');
+        let isScrolled = false;
+        let ticking = false;
+
+        function updateHeaderState() {
+            const scrollY = window.scrollY || window.pageYOffset;
+            const shouldBeScrolled = scrollY > CONFIG.scrollThreshold;
+
+            if (shouldBeScrolled !== isScrolled) {
+                isScrolled = shouldBeScrolled;
+                if (isScrolled) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            }
+            ticking = false;
+        }
+
+        function onScroll() {
+            if (!ticking) {
+                requestAnimationFrame(updateHeaderState);
+                ticking = true;
+            }
+        }
+
+        function init() {
+            if (!header) return;
+            window.addEventListener('scroll', onScroll, { passive: true });
+            updateHeaderState();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

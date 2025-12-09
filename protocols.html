@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protocols - Mashroom</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --color-bg: #FAFAFA;
+            --color-text-primary: #0A0A0A;
+            --color-text-secondary: #666666;
+            --color-text-tertiary: #999999;
+            --color-border: #E5E5E5;
+            --color-accent: #E85D04;
+            --font-sans: "Space Grotesk", sans-serif;
+            --font-serif: "Playfair Display", Georgia, serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            line-height: 1.5;
+            /* overflow: hidden; REMOVED - allow natural page scroll */
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           HEADER - Dynamic Logo
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* GRADIENT TRASPARENTE - stato iniziale */
+            background: linear-gradient(to bottom,
+                rgba(250, 250, 250, 0.95) 0%,
+                rgba(250, 250, 250, 0.6) 60%,
+                transparent 100%
+            );
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: padding 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+                        background 0.4s ease,
+                        backdrop-filter 0.4s ease,
+                        box-shadow 0.4s ease;
+        }
+
+        .header.scrolled {
+            padding: 0.75rem 3rem;
+            /* BACKGROUND OPACO - stato scrolled */
+            background: rgba(250, 250, 250, 0.98);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo-image {
+            height: 130px;
+            width: auto;
+            transition: height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            will-change: height;
+        }
+
+        .header.scrolled .logo-image {
+            height: 36px;
+        }
+
+        .logo-text {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            margin-left: 0.75rem;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .header.scrolled .logo-text {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Responsive Logo */
+        @media (max-width: 1024px) {
+            .logo-image {
+                height: 100px;
+            }
+            .header.scrolled .logo-image {
+                height: 32px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logo-image {
+                height: 80px;
+            }
+            .header.scrolled .logo-image {
+                height: 28px;
+            }
+        }
+
+        /* Accessibility: Respect reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            .logo-image, .logo-text, .header {
+                transition: none !important;
+            }
+        }
+
+        .logo:hover .logo-image {
+            opacity: 0.8;
+        }
+
+        .nav {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .nav-link:hover {
+            color: var(--color-text-secondary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: var(--color-accent);
+            border-radius: 50%;
+        }
+
+        .cta-button {
+            font-size: 0.9rem;
+            font-weight: 400;
+            padding: 0.6rem 1.5rem;
+            background-color: var(--color-text-primary);
+            color: var(--color-bg);
+            border-radius: 4px;
+            transition: opacity 0.2s ease;
+        }
+
+        .cta-button:hover {
+            opacity: 0.85;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           SPLIT LAYOUT - Scrollable Left, Sticky Right
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .split-container {
+            display: flex;
+            min-height: 100vh; /* Changed from height to min-height */
+            padding-top: 5rem;
+        }
+
+        /* Left Panel - Natural Content Flow (no internal scroll) */
+        .content-panel {
+            width: 50%;
+            /* Removed: height, overflow-y, scroll-snap-type */
+            /* Content now flows naturally with page scroll */
+            padding: 4rem 2rem 4rem 4rem;
+        }
+
+        /* Right Panel - Sticky Illustration */
+        .illustration-panel {
+            position: sticky;
+            top: 5rem;
+            width: 50%;
+            height: calc(100vh - 5rem);
+            align-self: flex-start; /* Added for sticky to work in flex */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .illustration-container {
+            width: min(100%, 600px);
+            height: 0;
+            padding-bottom: min(100%, 600px); /* Creates a square using padding trick */
+            position: relative;
+        }
+
+        .illustration-container svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           SNAP SECTIONS
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .snap-section {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            min-height: calc(100vh - 9rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           HERO CONTENT
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .hero-content {
+            padding-bottom: 4rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .hero-title {
+            font-family: var(--font-serif);
+            font-size: clamp(3.5rem, 7vw, 6rem);
+            font-weight: 400;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            margin-bottom: 2rem;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            font-weight: 400;
+            line-height: 1.75;
+            color: var(--color-text-secondary);
+            max-width: 520px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           ACCORDION - Pricing Cards with Snap
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .accordion-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .accordion-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-top: 1px solid var(--color-border);
+            padding: 2rem 0;
+            cursor: pointer;
+            overflow: hidden;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .accordion-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Accordion Pair - Two items per snap section */
+        .accordion-pair {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            min-height: calc(100vh - 9rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .accordion-pair .accordion-item:first-child {
+            border-top: 1px solid var(--color-border);
+        }
+
+        .accordion-pair:last-child .accordion-item:last-child {
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .accordion-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1.5rem;
+        }
+
+        .accordion-number {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+            font-weight: 300;
+            min-width: 20px;
+        }
+
+        .accordion-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+        }
+
+        .accordion-value {
+            font-size: 1.25rem;
+            font-weight: 300;
+            color: var(--color-text-secondary);
+            margin-left: auto;
+        }
+
+        .accordion-value::before {
+            content: '[';
+        }
+
+        .accordion-value::after {
+            content: ']';
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.4s ease, padding 0.4s ease;
+            opacity: 0;
+            padding-top: 0;
+            padding-left: calc(20px + 1.5rem);
+        }
+
+        /* Desktop: hover expansion */
+        @media (min-width: 769px) {
+            .accordion-item:hover .accordion-content {
+                max-height: 300px;
+                opacity: 1;
+                padding-top: 1rem;
+            }
+        }
+
+        /* Mobile & Desktop: click expansion via .active class */
+        .accordion-item.active .accordion-content {
+            max-height: 300px;
+            opacity: 1;
+            padding-top: 1rem;
+        }
+
+        .accordion-text {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--color-text-secondary);
+            max-width: 450px;
+        }
+
+        /* Pricing Features List */
+        .pricing-features {
+            list-style: none;
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .pricing-features li {
+            position: relative;
+            padding-left: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--color-text-primary);
+            font-weight: 500;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           CONTACT SECTION
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .contact {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            min-height: calc(100vh - 9rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-top: 4rem;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .contact-number {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+            margin-bottom: 2rem;
+        }
+
+        .contact-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        .contact-block h2 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+        }
+
+        .contact-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .contact-link {
+            font-size: 0.95rem;
+            color: var(--color-text-secondary);
+            transition: color 0.2s ease;
+        }
+
+        .contact-link:hover {
+            color: var(--color-text-primary);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           FOOTER
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .footer-text {
+            font-size: 0.85rem;
+            color: var(--color-text-tertiary);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           SCROLL-BASED ANIMATED NODES
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .node-orbit {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #0A0A0A;
+            border-radius: 50%;
+            will-change: left, top;
+            transition: left 0.05s linear, top 0.05s linear;
+        }
+
+        /* All nodes same color as About page */
+        .node-orbit.free,
+        .node-orbit.onetime,
+        .node-orbit.subscription,
+        .node-orbit.performance { background-color: #0A0A0A; }
+
+        .center-node {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px;
+            background-color: #0A0A0A;
+            border-radius: 50%;
+        }
+
+        /* Node Labels */
+        .node-label {
+            position: absolute;
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            white-space: nowrap;
+            transform: translate(-50%, -150%);
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           MOBILE MENU BUTTON & OVERLAY
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .mobile-menu-btn {
+            display: none;
+            width: 44px;
+            height: 44px;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--color-text-primary);
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-menu-btn:hover,
+        .mobile-menu-btn:active {
+            border-color: var(--color-text-primary);
+            background: var(--color-text-primary);
+            color: var(--color-bg);
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(250, 250, 250, 0.98);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            width: 44px;
+            height: 44px;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-menu-close:hover,
+        .mobile-menu-close:active {
+            border-color: var(--color-text-primary);
+            background: var(--color-text-primary);
+            color: var(--color-bg);
+        }
+
+        .mobile-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .mobile-nav-link {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            text-decoration: none;
+            padding: 0.75rem 2rem;
+            transition: color 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-nav-link:hover,
+        .mobile-nav-link:active {
+            color: var(--color-accent);
+        }
+
+        .mobile-nav-link.active {
+            color: var(--color-accent);
+        }
+
+        .mobile-cta {
+            margin-top: 2rem;
+            font-size: 1rem;
+            font-weight: 400;
+            padding: 1rem 2rem;
+            background-color: var(--color-text-primary);
+            color: var(--color-bg);
+            border-radius: 4px;
+            text-decoration: none;
+            min-width: 200px;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════════════════════ */
+
+        @media (max-width: 1024px) {
+            /* Disable scroll-snap for natural scrolling on tablet/mobile */
+            html {
+                scroll-snap-type: none;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            body {
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .split-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .illustration-panel {
+                position: relative;
+                top: 0;
+                width: 100%;
+                height: 50vh;
+                min-height: 400px;
+                order: -1;
+            }
+
+            .content-panel {
+                width: 100%;
+                height: auto;
+                overflow: visible;
+                scroll-snap-type: none;
+                padding: 2rem;
+            }
+
+            .snap-section,
+            .accordion-item,
+            .accordion-pair,
+            .contact {
+                min-height: auto;
+                scroll-snap-align: none;
+                scroll-snap-stop: normal;
+            }
+
+            .accordion-pair {
+                gap: 0;
+            }
+
+            .illustration-container {
+                width: min(100%, 400px);
+                padding-bottom: min(100%, 400px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* DISABLED: Natural scrolling on mobile (no scroll-snap) */
+            html {
+                scroll-snap-type: none !important;
+                -webkit-overflow-scrolling: touch;
+                overflow-y: auto;
+            }
+
+            body {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Remove snap alignment from all sections */
+            .snap-section,
+            .accordion-pair,
+            .contact {
+                scroll-snap-align: none;
+                scroll-snap-stop: normal;
+            }
+
+            .header {
+                padding: 1rem 1.5rem;
+            }
+
+            .nav {
+                display: none;
+            }
+
+            .cta-button {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .hero-title {
+                font-size: 2.75rem;
+            }
+
+            .hero-description {
+                font-size: 1.1rem;
+            }
+
+            .accordion-header {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .accordion-value {
+                margin-left: 0;
+                width: 100%;
+                padding-left: calc(20px + 1.5rem);
+            }
+
+            .contact-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .contact-link {
+                padding: 0.75rem 0;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+            }
+        }
+
+        /* Small phones */
+        @media (max-width: 480px) {
+            .header {
+                padding: 0.75rem 1rem;
+            }
+
+            .hero-title {
+                font-size: 2.25rem;
+            }
+
+            .hero-description {
+                font-size: 1rem;
+            }
+
+            .accordion-title {
+                font-size: 1.25rem;
+            }
+
+            .accordion-value {
+                font-size: 1rem;
+            }
+
+            .content-panel {
+                padding: 1.5rem 1rem;
+            }
+        }
+
+        /* Scrollbar hiding removed - using natural page scroll */
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="universe.html" class="logo">
+            <img src="assets/logo.png" alt="Mashroom Logo" class="logo-image" loading="eager">
+            <span class="logo-text">Mashroom</span>
+        </a>
+
+        <nav class="nav">
+            <a href="universe.html" class="nav-link">Universe</a>
+            <a href="about.html" class="nav-link">About</a>
+            <a href="docs.html" class="nav-link">Learning</a>
+            <a href="protocols.html" class="nav-link active">Prices</a>
+        </nav>
+
+        <a href="https://forms.gle/yQSqha5P9ivX3Kt78" target="_blank" class="cta-button">Connect with us</a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">☰</button>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">×</button>
+        <nav class="mobile-nav">
+            <a href="universe.html" class="mobile-nav-link">Universe</a>
+            <a href="about.html" class="mobile-nav-link">About</a>
+            <a href="docs.html" class="mobile-nav-link">Learning</a>
+            <a href="protocols.html" class="mobile-nav-link active">Prices</a>
+            <a href="https://forms.gle/yQSqha5P9ivX3Kt78" target="_blank" class="mobile-cta">Connect with us</a>
+        </nav>
+    </div>
+
+    <main class="split-container">
+        <!-- Left Panel - Scrollable Content with Snap -->
+        <div class="content-panel" id="contentPanel">
+            <!-- Hero -->
+            <div class="hero-content snap-section">
+                <h1 class="hero-title">
+                    Simple pricing,<br>powerful strategies
+                </h1>
+                <p class="hero-description">
+                    Choose how you want to access DeFi strategies. From free community tools to premium automated systems — find what works for your investment style. No hidden fees, no surprises.
+                </p>
+            </div>
+
+            <!-- Pricing Cards - In Pairs -->
+            <div class="accordion-list">
+
+                <!-- Pair 1: Free + One-Time -->
+                <div class="accordion-pair">
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">01</span>
+                            <span class="accordion-title">Free Forever</span>
+                            <span class="accordion-value">$0</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                Start your DeFi journey without any upfront cost. Access community-built strategies with transparent performance data. Perfect for learning and small portfolios.
+                            </p>
+                            <ul class="pricing-features">
+                                <li>Basic yield strategies</li>
+                                <li>Conservative staking options</li>
+                                <li>Community support</li>
+                                <li>Limited backtesting</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">02</span>
+                            <span class="accordion-title">Lifetime Access</span>
+                            <span class="accordion-value">From $199</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                Pay once, own forever. Get permanent access to premium strategies crafted by expert builders. No recurring fees, no hidden costs — just one-time purchase.
+                            </p>
+                            <ul class="pricing-features">
+                                <li>One-time payment</li>
+                                <li>Lifetime strategy updates</li>
+                                <li>Priority support</li>
+                                <li>Unlimited backtesting</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pair 2: Subscription + Performance -->
+                <div class="accordion-pair">
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">03</span>
+                            <span class="accordion-title">Pro Subscription</span>
+                            <span class="accordion-value">From $49/mo</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                Access the full power of automated DeFi. Monthly subscriptions give you flexibility to try different strategies and scale as your portfolio grows.
+                            </p>
+                            <ul class="pricing-features">
+                                <li>Cancel anytime</li>
+                                <li>All premium features</li>
+                                <li>Real-time alerts</li>
+                                <li>API access</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">04</span>
+                            <span class="accordion-title">Performance Based</span>
+                            <span class="accordion-value">5-20% of profits</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                Align incentives with strategy creators. Only pay when you profit. The creator earns when you earn — simple as that. Perfect for high-conviction strategies.
+                            </p>
+                            <ul class="pricing-features">
+                                <li>Pay only on profits</li>
+                                <li>Transparent fee structure</li>
+                                <li>Aligned incentives</li>
+                                <li>No upfront cost</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Contact / CTA -->
+            <div class="contact">
+                <span class="contact-number">05</span>
+
+                <div class="contact-grid">
+                    <div class="contact-block">
+                        <h2>Connect</h2>
+                        <div class="contact-links">
+                            <a href="https://forms.gle/yQSqha5P9ivX3Kt78" target="_blank" class="contact-link">Contact Us</a>
+                        </div>
+                    </div>
+
+                    <div class="contact-block">
+                        <h2>Explore</h2>
+                        <div class="contact-links">
+                            <a href="universe.html" class="contact-link">Universe</a>
+                            <a href="about.html" class="contact-link">About</a>
+                            <a href="docs.html" class="contact-link">Learning</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="footer">
+                    <p class="footer-text">© 2025 Mashroom. Not financial advice.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Sticky Animated Illustration -->
+        <div class="illustration-panel">
+            <div class="illustration-container" id="orbitContainer">
+                <!-- Static orbital paths -->
+                <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 0;">
+                    <!-- Outer orbit (pricing tiers) -->
+                    <ellipse cx="200" cy="200" rx="150" ry="80" stroke="#E5E5E5" stroke-width="1" transform="rotate(0 200 200)"/>
+                    <ellipse cx="200" cy="200" rx="150" ry="80" stroke="#E5E5E5" stroke-width="1" transform="rotate(90 200 200)"/>
+
+                    <!-- Inner orbit (features) -->
+                    <ellipse cx="200" cy="200" rx="100" ry="50" stroke="#CCCCCC" stroke-width="1" transform="rotate(45 200 200)"/>
+                    <ellipse cx="200" cy="200" rx="100" ry="50" stroke="#CCCCCC" stroke-width="1" transform="rotate(135 200 200)"/>
+
+                    <!-- Core orbit -->
+                    <circle cx="200" cy="200" r="50" stroke="#999999" stroke-width="1" fill="none"/>
+
+                    <!-- Dashed connections from center to outer -->
+                    <line x1="200" y1="200" x2="200" y2="50" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="200" y1="200" x2="350" y2="200" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="200" y1="200" x2="200" y2="350" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="4,4"/>
+                    <line x1="200" y1="200" x2="50" y2="200" stroke="#E5E5E5" stroke-width="1" stroke-dasharray="4,4"/>
+                </svg>
+
+                <!-- Scroll-animated pricing nodes -->
+                <div class="node-orbit free" id="node1"></div>
+                <div class="node-orbit onetime" id="node2"></div>
+                <div class="node-orbit subscription" id="node3"></div>
+                <div class="node-orbit performance" id="node4"></div>
+
+                <!-- Center node (Mashroom) -->
+                <div class="center-node"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scroll-Based Animation Script -->
+    <script>
+        (function() {
+            // ═══════════════════════════════════════════════════════════════════
+            // ORBIT CONFIGURATION - 4 Pricing Tiers
+            // ═══════════════════════════════════════════════════════════════════
+
+            const config = {
+                centerX: 200,
+                centerY: 200,
+
+                // Outer orbit nodes - 4 pricing tiers
+                outerOrbit: {
+                    rx: 150,
+                    ry: 80,
+                    nodes: [
+                        { id: 'node1', orbitRotation: 0,   initialAngle: 0,   speed: 1.0, label: 'Free' },
+                        { id: 'node2', orbitRotation: 0,   initialAngle: 180, speed: 1.0, label: '$199' },
+                    ]
+                },
+
+                // Inner orbit nodes
+                innerOrbit: {
+                    rx: 100,
+                    ry: 50,
+                    nodes: [
+                        { id: 'node3', orbitRotation: 90,  initialAngle: 90,  speed: 1.3, label: '$49/mo' },
+                        { id: 'node4', orbitRotation: 90,  initialAngle: 270, speed: 1.3, label: '10%' },
+                    ]
+                }
+            };
+
+            // ═══════════════════════════════════════════════════════════════════
+            // POSITION CALCULATION ON ROTATED ELLIPSE
+            // ═══════════════════════════════════════════════════════════════════
+
+            function getEllipsePosition(angle, rx, ry, rotation, cx, cy) {
+                const angleRad = (angle * Math.PI) / 180;
+                const rotationRad = (rotation * Math.PI) / 180;
+
+                const x0 = rx * Math.cos(angleRad);
+                const y0 = ry * Math.sin(angleRad);
+
+                const x = cx + x0 * Math.cos(rotationRad) - y0 * Math.sin(rotationRad);
+                const y = cy + x0 * Math.sin(rotationRad) + y0 * Math.cos(rotationRad);
+
+                return { x, y };
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // SCROLL-BASED ANIMATION
+            // ═══════════════════════════════════════════════════════════════════
+
+            const container = document.getElementById('orbitContainer');
+
+            // Get container dimensions for scaling (now always square)
+            function getScale() {
+                const rect = container.getBoundingClientRect();
+                // Use width as the dimension since container is always square
+                return rect.width / 400;
+            }
+
+            function updateNodes() {
+                // Changed to use window scroll instead of panel scroll
+                const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+
+                const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+                const rotationAngle = progress * 360 * 2;
+
+                const scale = getScale();
+
+                // Update outer orbit nodes
+                config.outerOrbit.nodes.forEach(node => {
+                    const angle = node.initialAngle + (rotationAngle * node.speed);
+                    const pos = getEllipsePosition(
+                        angle,
+                        config.outerOrbit.rx,
+                        config.outerOrbit.ry,
+                        node.orbitRotation,
+                        config.centerX,
+                        config.centerY
+                    );
+
+                    const element = document.getElementById(node.id);
+                    if (element) {
+                        element.style.left = (pos.x * scale - 5) + 'px';
+                        element.style.top = (pos.y * scale - 5) + 'px';
+                    }
+                });
+
+                // Update inner orbit nodes
+                config.innerOrbit.nodes.forEach(node => {
+                    const angle = node.initialAngle + (rotationAngle * node.speed);
+                    const pos = getEllipsePosition(
+                        angle,
+                        config.innerOrbit.rx,
+                        config.innerOrbit.ry,
+                        node.orbitRotation,
+                        config.centerX,
+                        config.centerY
+                    );
+
+                    const element = document.getElementById(node.id);
+                    if (element) {
+                        element.style.left = (pos.x * scale - 5) + 'px';
+                        element.style.top = (pos.y * scale - 5) + 'px';
+                    }
+                });
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // EVENT LISTENERS
+            // ═══════════════════════════════════════════════════════════════════
+
+            let ticking = false;
+
+            // Changed to window scroll listener (page scroll instead of panel scroll)
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    requestAnimationFrame(function() {
+                        updateNodes();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            window.addEventListener('resize', updateNodes);
+
+            // Initial position
+            updateNodes();
+        })();
+    </script>
+
+    <!-- Accordion Click Toggle Script (One at a time) -->
+    <script>
+        (function() {
+            const accordionItems = document.querySelectorAll('.accordion-item');
+
+            accordionItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    // Don't interfere with links inside accordion content
+                    if (e.target.closest('a')) return;
+
+                    const isActive = this.classList.contains('active');
+
+                    // Close all other accordions (one at a time behavior)
+                    accordionItems.forEach(otherItem => {
+                        otherItem.classList.remove('active');
+                    });
+
+                    // Toggle current one
+                    if (!isActive) {
+                        this.classList.add('active');
+                    }
+                });
+            });
+        })();
+    </script>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        (function() {
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const menuOverlay = document.getElementById('mobileMenuOverlay');
+            const menuClose = document.getElementById('mobileMenuClose');
+
+            if (menuBtn && menuOverlay && menuClose) {
+                menuBtn.addEventListener('click', function() {
+                    menuOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+
+                menuClose.addEventListener('click', function() {
+                    menuOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+
+                menuOverlay.addEventListener('click', function(e) {
+                    if (e.target === menuOverlay) {
+                        menuOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && menuOverlay.classList.contains('active')) {
+                        menuOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+            }
+        })();
+    </script>
+
+    <!-- Logo Scroll Resize Script -->
+    <script>
+    (function() {
+        'use strict';
+
+        const CONFIG = { scrollThreshold: 50 };
+        const header = document.querySelector('.header');
+        let isScrolled = false;
+        let ticking = false;
+
+        function updateHeaderState() {
+            const scrollY = window.scrollY || window.pageYOffset;
+            const shouldBeScrolled = scrollY > CONFIG.scrollThreshold;
+
+            if (shouldBeScrolled !== isScrolled) {
+                isScrolled = shouldBeScrolled;
+                if (isScrolled) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            }
+            ticking = false;
+        }
+
+        function onScroll() {
+            if (!ticking) {
+                requestAnimationFrame(updateHeaderState);
+                ticking = true;
+            }
+        }
+
+        function init() {
+            if (!header) return;
+            window.addEventListener('scroll', onScroll, { passive: true });
+            updateHeaderState();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

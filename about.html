@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Mashroom</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --color-bg: #FAFAFA;
+            --color-text-primary: #0A0A0A;
+            --color-text-secondary: #666666;
+            --color-text-tertiary: #999999;
+            --color-border: #E5E5E5;
+            --color-accent: #E85D04;
+            --font-sans: "Space Grotesk", sans-serif;
+            --font-serif: "Playfair Display", Georgia, serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            line-height: 1.5;
+            overflow: hidden;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           HEADER
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* GRADIENT TRASPARENTE - stato iniziale */
+            background: linear-gradient(to bottom,
+                rgba(250, 250, 250, 0.95) 0%,
+                rgba(250, 250, 250, 0.6) 60%,
+                transparent 100%
+            );
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: padding 0.4s cubic-bezier(0.25, 0.1, 0.25, 1),
+                        background 0.4s ease,
+                        backdrop-filter 0.4s ease,
+                        box-shadow 0.4s ease;
+        }
+
+        .header.scrolled {
+            padding: 0.75rem 3rem;
+            /* BACKGROUND OPACO - stato scrolled */
+            background: rgba(250, 250, 250, 0.98);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        /* Logo Container */
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .logo-image {
+            height: 130px;
+            width: auto;
+            transition: height 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            will-change: height;
+        }
+
+        .header.scrolled .logo-image {
+            height: 36px;
+        }
+
+        .logo-text {
+            font-family: var(--font-serif);
+            font-size: 1.125rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            margin-left: 0.75rem;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .header.scrolled .logo-text {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Responsive Logo */
+        @media (max-width: 1024px) {
+            .logo-image {
+                height: 100px;
+            }
+            .header.scrolled .logo-image {
+                height: 32px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .logo-image {
+                height: 80px;
+            }
+            .header.scrolled .logo-image {
+                height: 28px;
+            }
+        }
+
+        /* Accessibility: Respect reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            .logo-image, .logo-text, .header {
+                transition: none !important;
+            }
+        }
+
+        .nav {
+            display: flex;
+            gap: 2.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .nav-link:hover {
+            color: var(--color-text-secondary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: var(--color-accent);
+            border-radius: 50%;
+        }
+
+        .cta-button {
+            font-size: 0.9rem;
+            font-weight: 400;
+            padding: 0.6rem 1.5rem;
+            background-color: var(--color-text-primary);
+            color: var(--color-bg);
+            border-radius: 4px;
+            transition: opacity 0.2s ease;
+        }
+
+        .cta-button:hover {
+            opacity: 0.85;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           MOBILE MENU BUTTON & OVERLAY
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .mobile-menu-btn {
+            display: none;
+            width: 44px;
+            height: 44px;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--color-text-primary);
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            pointer-events: auto;
+        }
+
+        .mobile-menu-btn:hover,
+        .mobile-menu-btn:active {
+            border-color: var(--color-text-primary);
+            background: var(--color-text-primary);
+            color: var(--color-bg);
+        }
+
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(250, 250, 250, 0.98);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.5rem;
+            width: 44px;
+            height: 44px;
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-menu-close:hover,
+        .mobile-menu-close:active {
+            border-color: var(--color-text-primary);
+            background: var(--color-text-primary);
+            color: var(--color-bg);
+        }
+
+        .mobile-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .mobile-nav-link {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--color-text-primary);
+            text-decoration: none;
+            padding: 0.75rem 2rem;
+            transition: color 0.2s ease;
+        }
+
+        .mobile-nav-link:hover,
+        .mobile-nav-link:active {
+            color: var(--color-accent);
+        }
+
+        .mobile-nav-link.active {
+            color: var(--color-accent);
+        }
+
+        .mobile-cta {
+            margin-top: 2rem;
+            font-size: 1rem;
+            font-weight: 400;
+            padding: 1rem 2rem;
+            background-color: var(--color-text-primary);
+            color: var(--color-bg);
+            border-radius: 4px;
+            text-decoration: none;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           SPLIT LAYOUT - Scrollable Left, Sticky Right
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .split-container {
+            display: flex;
+            height: 100vh;
+            padding-top: 5rem;
+        }
+
+        /* Left Panel - Scrollable Content with Scroll-Snap */
+        .content-panel {
+            width: 50%;
+            height: calc(100vh - 5rem);
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-padding-top: 2rem;
+            padding: 4rem 2rem 4rem 4rem;
+        }
+
+        /* Right Panel - Sticky Illustration */
+        .illustration-panel {
+            position: sticky;
+            top: 5rem;
+            width: 50%;
+            height: calc(100vh - 5rem);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .illustration-container {
+            width: 100%;
+            max-width: 600px;
+            height: 600px;
+            position: relative;
+        }
+
+        .illustration-container svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           SNAP SECTIONS
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .snap-section {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            min-height: calc(100vh - 9rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           HERO CONTENT
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .hero-content {
+            padding-bottom: 4rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .hero-title {
+            font-family: var(--font-serif);
+            font-size: clamp(3.5rem, 7vw, 6rem);
+            font-weight: 400;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            margin-bottom: 2rem;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            font-weight: 400;
+            line-height: 1.75;
+            color: var(--color-text-secondary);
+            max-width: 520px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           ACCORDION - Vertical Layout with Snap
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .accordion-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .accordion-item {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-top: 1px solid var(--color-border);
+            padding: 2rem 0;
+            cursor: pointer;
+            overflow: hidden;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .accordion-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Accordion Pair - Two items per snap section */
+        .accordion-pair {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            min-height: calc(100vh - 9rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .accordion-pair .accordion-item:first-child {
+            border-top: 1px solid var(--color-border);
+        }
+
+        .accordion-pair:last-child .accordion-item:last-child {
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .accordion-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1.5rem;
+        }
+
+        .accordion-number {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+            font-weight: 300;
+            min-width: 20px;
+        }
+
+        .accordion-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+        }
+
+        .accordion-value {
+            font-size: 1.25rem;
+            font-weight: 300;
+            color: var(--color-text-secondary);
+            margin-left: auto;
+        }
+
+        .accordion-value::before {
+            content: '[';
+        }
+
+        .accordion-value::after {
+            content: ']';
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.4s ease, padding 0.4s ease;
+            opacity: 0;
+            padding-top: 0;
+            padding-left: calc(20px + 1.5rem);
+        }
+
+        .accordion-item:hover .accordion-content {
+            max-height: 200px;
+            opacity: 1;
+            padding-top: 1rem;
+        }
+
+        .accordion-text {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--color-text-secondary);
+            max-width: 450px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           CONTACT SECTION
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .contact {
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            min-height: calc(100vh - 9rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-top: 4rem;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .contact-number {
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+            margin-bottom: 2rem;
+        }
+
+        .contact-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        .contact-block h2 {
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            font-weight: 400;
+            margin-bottom: 1rem;
+        }
+
+        .contact-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .contact-link {
+            font-size: 0.95rem;
+            color: var(--color-text-secondary);
+            transition: color 0.2s ease;
+        }
+
+        .contact-link:hover {
+            color: var(--color-text-primary);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           FOOTER
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .footer-text {
+            font-size: 0.85rem;
+            color: var(--color-text-tertiary);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           SCROLL-BASED ANIMATED NODES (No auto-animation)
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .node-orbit {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #0A0A0A;
+            border-radius: 50%;
+            will-change: left, top;
+            transition: left 0.05s linear, top 0.05s linear;
+        }
+
+        .center-node {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            margin: -8px;
+            background-color: #0A0A0A;
+            border-radius: 50%;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════════════════════ */
+
+        @media (max-width: 1024px) {
+            body {
+                overflow: auto;
+            }
+
+            .split-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .illustration-panel {
+                position: relative;
+                top: 0;
+                width: 100%;
+                height: 50vh;
+                min-height: 400px;
+                order: -1;
+            }
+
+            .content-panel {
+                width: 100%;
+                height: auto;
+                overflow: visible;
+                scroll-snap-type: none;
+                padding: 2rem;
+            }
+
+            .snap-section,
+            .accordion-item,
+            .accordion-pair,
+            .contact {
+                min-height: auto;
+                scroll-snap-align: none;
+                scroll-snap-stop: normal;
+            }
+
+            .accordion-pair {
+                gap: 0;
+            }
+
+            .illustration-container {
+                max-width: 400px;
+                height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem 1.5rem;
+            }
+
+            .nav {
+                display: none;
+            }
+
+            .cta-button {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            .hero-title {
+                font-size: 2.75rem;
+            }
+
+            .accordion-header {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .accordion-value {
+                margin-left: 0;
+                width: 100%;
+                padding-left: calc(20px + 1.5rem);
+            }
+        }
+
+        /* Hide scrollbar but keep functionality */
+        .content-panel::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <a href="universe.html" class="logo">
+            <img
+                src="./assets/logo.png"
+                alt="Mashroom Logo"
+                class="logo-image"
+                loading="eager"
+            />
+            <span class="logo-text">Mashroom</span>
+        </a>
+
+        <nav class="nav">
+            <a href="universe.html" class="nav-link">Universe</a>
+            <a href="about.html" class="nav-link active">About</a>
+            <a href="docs.html" class="nav-link">Learning</a>
+            <a href="protocols.html" class="nav-link">Prices</a>
+        </nav>
+
+        <a href="https://forms.gle/yQSqha5P9ivX3Kt78" target="_blank" class="cta-button">Connect with us</a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">☰</button>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">×</button>
+        <nav class="mobile-nav">
+            <a href="universe.html" class="mobile-nav-link">Universe</a>
+            <a href="about.html" class="mobile-nav-link active">About</a>
+            <a href="docs.html" class="mobile-nav-link">Learning</a>
+            <a href="protocols.html" class="mobile-nav-link">Prices</a>
+            <a href="https://forms.gle/yQSqha5P9ivX3Kt78" target="_blank" class="mobile-cta">Connect with us</a>
+        </nav>
+    </div>
+
+    <main class="split-container">
+        <!-- Left Panel - Scrollable Content with Snap -->
+        <div class="content-panel" id="contentPanel">
+            <!-- Hero -->
+            <div class="hero-content snap-section">
+                <h1 class="hero-title">
+                    DeFi made<br>for everyone
+                </h1>
+                <p class="hero-description">
+                    We believe growing your crypto should be simple, safe, and maybe even fun. That's why we built Mashroom — a friendly space where you can explore DeFi opportunities without the complexity. No coding. No confusion. Just you and your goals.
+                </p>
+            </div>
+
+            <!-- Accordion Features - Now in Pairs -->
+            <div class="accordion-list">
+
+                <!-- Pair 1: Design + Connect (How you build with us) -->
+                <div class="accordion-pair">
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">01</span>
+                            <span class="accordion-title">Design</span>
+                            <span class="accordion-value">Like Drawing</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                Create your investment strategy the way you'd sketch an idea — by simply dragging and dropping. No code, no formulas. Just connect the dots and watch your vision come to life.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">02</span>
+                            <span class="accordion-title">Connect</span>
+                            <span class="accordion-value">All in One Place</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                Your favorite DeFi protocols, all under one roof. No more jumping between apps or keeping track of dozens of tabs. Everything you need is right here, ready when you are.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pair 2: Test First + Launch (From idea to reality) -->
+                <div class="accordion-pair">
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">03</span>
+                            <span class="accordion-title">Test First</span>
+                            <span class="accordion-value">Try Before You Fly</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                Curious how your strategy would have performed? We'll show you. Run your ideas through two years of real market data before you invest a single penny. Because the best surprises are the ones you plan for.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">04</span>
+                            <span class="accordion-title">Launch</span>
+                            <span class="accordion-value">One Click Away</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                When you're ready, we handle the technical magic. Your strategy goes live with a single click — we take care of the security checks and all the behind-the-scenes complexity. You just enjoy the results.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pair 3: Explore + Stay Safe (How we help you navigate) -->
+                <div class="accordion-pair">
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">05</span>
+                            <span class="accordion-title">Explore</span>
+                            <span class="accordion-value">Find Your Path</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                Not sure where to start? We'll guide you. Browse opportunities with clear, honest information about the risks and rewards. Think of it as a friendly tour guide for the world of DeFi.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">06</span>
+                            <span class="accordion-title">Stay Safe</span>
+                            <span class="accordion-value">We've Got You</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                The crypto world can feel risky, but we're looking out for you. Our protection systems work quietly in the background, shielding your investments from common threats. Sleep well — we're on watch.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pair 4: Learn + Grow (How you level up) -->
+                <div class="accordion-pair">
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">07</span>
+                            <span class="accordion-title">Learn</span>
+                            <span class="accordion-value">From Each Other</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                New to this? Learn from the community. Browse strategies created by experienced users, or share your own discoveries with others. We grow better together — and creators even earn when you follow their lead.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span class="accordion-number">08</span>
+                            <span class="accordion-title">Grow</span>
+                            <span class="accordion-value">At Your Pace</span>
+                        </div>
+                        <div class="accordion-content">
+                            <p class="accordion-text">
+                                Whether you're just starting with a small amount or managing larger investments, Mashroom grows with you. Start simple, and when you're ready for more advanced tools, we'll be here to support your journey.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Contact -->
+            <div class="contact">
+                <span class="contact-number">09</span>
+
+                <div class="contact-grid">
+                    <div class="contact-block">
+                        <h2>Connect</h2>
+                        <div class="contact-links">
+                            <a href="https://discord.gg/mashroom" class="contact-link" target="_blank">Discord</a>
+                            <a href="https://twitter.com/MashroomDeFi" class="contact-link" target="_blank">Twitter</a>
+                            <a href="mailto:team@mashroom.fi" class="contact-link">Email</a>
+                        </div>
+                    </div>
+
+                    <div class="contact-block">
+                        <h2>Resources</h2>
+                        <div class="contact-links">
+                            <a href="docs.html" class="contact-link">Learning</a>
+                            <a href="protocols.html" class="contact-link">Protocols</a>
+                            <a href="universe.html" class="contact-link">Universe</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="footer">
+                    <p class="footer-text">© 2025 Mashroom. Not financial advice.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Sticky Animated Illustration -->
+        <div class="illustration-panel">
+            <div class="illustration-container" id="orbitContainer">
+                <!-- Static orbital paths -->
+                <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 0; left: 0;">
+                    <!-- Outer orbits (rotated ellipses) -->
+                    <ellipse cx="200" cy="200" rx="150" ry="80" stroke="#E5E5E5" stroke-width="1" transform="rotate(0 200 200)"/>
+                    <ellipse cx="200" cy="200" rx="150" ry="80" stroke="#E5E5E5" stroke-width="1" transform="rotate(60 200 200)"/>
+                    <ellipse cx="200" cy="200" rx="150" ry="80" stroke="#E5E5E5" stroke-width="1" transform="rotate(120 200 200)"/>
+
+                    <!-- Inner orbits (rotated ellipses) -->
+                    <ellipse cx="200" cy="200" rx="100" ry="50" stroke="#CCCCCC" stroke-width="1" transform="rotate(30 200 200)"/>
+                    <ellipse cx="200" cy="200" rx="100" ry="50" stroke="#CCCCCC" stroke-width="1" transform="rotate(90 200 200)"/>
+                    <ellipse cx="200" cy="200" rx="100" ry="50" stroke="#CCCCCC" stroke-width="1" transform="rotate(150 200 200)"/>
+
+                    <!-- Core orbit -->
+                    <circle cx="200" cy="200" r="50" stroke="#999999" stroke-width="1" fill="none"/>
+                </svg>
+
+                <!-- Scroll-animated nodes -->
+                <div class="node-orbit" id="node1"></div>
+                <div class="node-orbit" id="node2"></div>
+                <div class="node-orbit" id="node3"></div>
+                <div class="node-orbit" id="node4"></div>
+                <div class="node-orbit" id="node5"></div>
+                <div class="node-orbit" id="node6"></div>
+                <div class="center-node"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scroll-Based Animation Script -->
+    <script>
+        (function() {
+            // ═══════════════════════════════════════════════════════════════════
+            // ORBIT CONFIGURATION
+            // ═══════════════════════════════════════════════════════════════════
+
+            const config = {
+                // Center of the SVG viewBox (scaled to container)
+                centerX: 200,
+                centerY: 200,
+
+                // Outer orbit nodes (rx=150, ry=80)
+                outerOrbit: {
+                    rx: 150,
+                    ry: 80,
+                    nodes: [
+                        { id: 'node1', orbitRotation: 0,   initialAngle: 0,   speed: 1.0 },
+                        { id: 'node2', orbitRotation: 60,  initialAngle: 120, speed: 1.2 },
+                        { id: 'node3', orbitRotation: 120, initialAngle: 240, speed: 0.8 }
+                    ]
+                },
+
+                // Inner orbit nodes (rx=100, ry=50)
+                innerOrbit: {
+                    rx: 100,
+                    ry: 50,
+                    nodes: [
+                        { id: 'node4', orbitRotation: 30,  initialAngle: 60,  speed: 1.5 },
+                        { id: 'node5', orbitRotation: 90,  initialAngle: 180, speed: 1.3 },
+                        { id: 'node6', orbitRotation: 150, initialAngle: 300, speed: 1.1 }
+                    ]
+                }
+            };
+
+            // ═══════════════════════════════════════════════════════════════════
+            // POSITION CALCULATION ON ROTATED ELLIPSE
+            // ═══════════════════════════════════════════════════════════════════
+
+            /**
+             * Calculate position on a rotated ellipse
+             * @param {number} angle - Angle in degrees (position on ellipse)
+             * @param {number} rx - Horizontal radius
+             * @param {number} ry - Vertical radius
+             * @param {number} rotation - Rotation of the ellipse in degrees
+             * @returns {{x: number, y: number}} Position coordinates
+             */
+            function getEllipsePosition(angle, rx, ry, rotation, cx, cy) {
+                // Convert to radians
+                const angleRad = (angle * Math.PI) / 180;
+                const rotationRad = (rotation * Math.PI) / 180;
+
+                // Position on unrotated ellipse
+                const x0 = rx * Math.cos(angleRad);
+                const y0 = ry * Math.sin(angleRad);
+
+                // Apply rotation transformation
+                const x = cx + x0 * Math.cos(rotationRad) - y0 * Math.sin(rotationRad);
+                const y = cy + x0 * Math.sin(rotationRad) + y0 * Math.cos(rotationRad);
+
+                return { x, y };
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // SCROLL-BASED ANIMATION
+            // ═══════════════════════════════════════════════════════════════════
+
+            const contentPanel = document.getElementById('contentPanel');
+            const container = document.getElementById('orbitContainer');
+
+            // Get container dimensions for scaling
+            function getScale() {
+                const rect = container.getBoundingClientRect();
+                return {
+                    scaleX: rect.width / 400,
+                    scaleY: rect.height / 400
+                };
+            }
+
+            // Update all node positions based on scroll
+            function updateNodes() {
+                const scrollTop = contentPanel.scrollTop;
+                const scrollHeight = contentPanel.scrollHeight - contentPanel.clientHeight;
+
+                // Calculate scroll progress (0 to 1)
+                const progress = scrollHeight > 0 ? scrollTop / scrollHeight : 0;
+
+                // Convert progress to rotation (multiple full rotations for smooth effect)
+                const rotationAngle = progress * 360 * 2; // 2 full rotations across scroll
+
+                const scale = getScale();
+
+                // Update outer orbit nodes
+                config.outerOrbit.nodes.forEach(node => {
+                    const angle = node.initialAngle + (rotationAngle * node.speed);
+                    const pos = getEllipsePosition(
+                        angle,
+                        config.outerOrbit.rx,
+                        config.outerOrbit.ry,
+                        node.orbitRotation,
+                        config.centerX,
+                        config.centerY
+                    );
+
+                    const element = document.getElementById(node.id);
+                    if (element) {
+                        element.style.left = (pos.x * scale.scaleX - 5) + 'px';
+                        element.style.top = (pos.y * scale.scaleY - 5) + 'px';
+                    }
+                });
+
+                // Update inner orbit nodes
+                config.innerOrbit.nodes.forEach(node => {
+                    const angle = node.initialAngle + (rotationAngle * node.speed);
+                    const pos = getEllipsePosition(
+                        angle,
+                        config.innerOrbit.rx,
+                        config.innerOrbit.ry,
+                        node.orbitRotation,
+                        config.centerX,
+                        config.centerY
+                    );
+
+                    const element = document.getElementById(node.id);
+                    if (element) {
+                        element.style.left = (pos.x * scale.scaleX - 5) + 'px';
+                        element.style.top = (pos.y * scale.scaleY - 5) + 'px';
+                    }
+                });
+            }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // EVENT LISTENERS
+            // ═══════════════════════════════════════════════════════════════════
+
+            let ticking = false;
+
+            contentPanel.addEventListener('scroll', function() {
+                if (!ticking) {
+                    requestAnimationFrame(function() {
+                        updateNodes();
+                        ticking = false;
+                    });
+                    ticking = true;
+                }
+            });
+
+            // Handle resize
+            window.addEventListener('resize', updateNodes);
+
+            // Initial position
+            updateNodes();
+        })();
+    </script>
+
+    <!-- Logo Scroll Resize Script -->
+    <script>
+    (function() {
+        'use strict';
+
+        const CONFIG = { scrollThreshold: 50 };
+        const header = document.querySelector('.header');
+        const contentPanel = document.getElementById('contentPanel');
+        let isScrolled = false;
+        let ticking = false;
+
+        function updateHeaderState() {
+            // Check both window scroll and content panel scroll
+            const windowScrollY = window.scrollY || window.pageYOffset;
+            const panelScrollY = contentPanel ? contentPanel.scrollTop : 0;
+            const scrollY = Math.max(windowScrollY, panelScrollY);
+
+            const shouldBeScrolled = scrollY > CONFIG.scrollThreshold;
+
+            if (shouldBeScrolled !== isScrolled) {
+                isScrolled = shouldBeScrolled;
+                if (isScrolled) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            }
+            ticking = false;
+        }
+
+        function onScroll() {
+            if (!ticking) {
+                requestAnimationFrame(updateHeaderState);
+                ticking = true;
+            }
+        }
+
+        function init() {
+            if (!header) return;
+
+            // Listen to both window and content panel scroll
+            window.addEventListener('scroll', onScroll, { passive: true });
+            if (contentPanel) {
+                contentPanel.addEventListener('scroll', onScroll, { passive: true });
+            }
+
+            updateHeaderState();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        (function() {
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            const menuOverlay = document.getElementById('mobileMenuOverlay');
+            const menuClose = document.getElementById('mobileMenuClose');
+
+            if (menuBtn && menuOverlay && menuClose) {
+                menuBtn.addEventListener('click', function() {
+                    menuOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+
+                menuClose.addEventListener('click', function() {
+                    menuOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+
+                menuOverlay.addEventListener('click', function(e) {
+                    if (e.target === menuOverlay) {
+                        menuOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && menuOverlay.classList.contains('active')) {
+                        menuOverlay.classList.remove('active');
+                        document.body.style.overflow = '';
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
